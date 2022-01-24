@@ -35,7 +35,7 @@ public enum HexPathingType
 // NOTE: Set as selection base to improve experience in Unity editor (with nested prefab)
 [SelectionBase]
 [RequireComponent(typeof(LineRenderer))]
-public class HexCell : MonoBehaviourGizmos
+public class HexTile : MonoBehaviourGizmos
 {
     #region Attributes
     [Title("Coordinates")]
@@ -48,7 +48,7 @@ public class HexCell : MonoBehaviourGizmos
     [PropertyOrder(-1)]
     [DisplayAsString]
     [ShowInInspector]
-    public int NeighbourCount => neighbours.Count((cell) => cell != null);
+    public int NeighbourCount => neighbours.Count((tile) => tile != null);
 
     [Title("Attributes")]
     [SerializeField]
@@ -70,29 +70,29 @@ public class HexCell : MonoBehaviourGizmos
 
     #region Properties
     /// <summary>
-    /// Hex cell height
+    /// Hex tile height
     /// </summary>
     public int Height => height;
     /// <summary>
-    /// Hex cell tile type (terrain)
+    /// Hex tile type (terrain)
     /// </summary>
     public HexTileType TileType => tileType;
     /// <summary>
-    /// Hex cell pathfinding type
+    /// Hex tile pathfinding type
     /// </summary>
     public HexPathingType PathingType => pathingType;
     /// <summary>
-    /// All hex cell neighbours (clockwise from NE)
+    /// All hex tile neighbours (clockwise from NE)
     /// <br /><br />
-    /// Note that cell neighbours will be null/empty on map borders!
+    /// Note that tile neighbours will be null/empty on map borders!
     /// </summary>
-    public HexCell?[] Neighbours => neighbours;
+    public HexTile?[] Neighbours => neighbours;
     /// <summary>
-    /// Hex cell coordinates
+    /// Hex tile coordinates
     /// </summary>
     public HexCoordinates Coordinates => coordinates;
     /// <summary>
-    /// Hex cell parent map
+    /// Hex tile parent map
     /// </summary>
     public HexMap HexMap
     {
@@ -104,7 +104,7 @@ public class HexCell : MonoBehaviourGizmos
         }
     }
     /// <summary>
-    /// Hex cell path waypoint
+    /// Hex tile path waypoint
     /// </summary>
     public PathWaypoint Waypoint
     {
@@ -119,7 +119,7 @@ public class HexCell : MonoBehaviourGizmos
 
 
     [SerializeField, HideInInspector]
-    private HexCell?[] neighbours = new HexCell[6];
+    private HexTile?[] neighbours = new HexTile[6];
     private HexMap _hexMap;
     private PathWaypoint _waypoint;
     private LineRenderer lineRenderer;
@@ -146,32 +146,32 @@ public class HexCell : MonoBehaviourGizmos
 
     #region Accessors
     /// <summary>
-    /// Get a cell's neighbour in a direction
+    /// Get a tile's neighbour in a direction
     /// </summary>
     /// <param name="direction">Target direction</param>
-    /// <returns>Neighbouring cell in direction</returns>
-    public HexCell? GetNeighbour(HexDirection direction)
+    /// <returns>Neighbouring tile in direction</returns>
+    public HexTile? GetNeighbour(HexDirection direction)
     {
         return neighbours[(int)direction];
     }
 
     /// <summary>
-    /// Get all neighbouring path cells
+    /// Get all neighbouring path tiles
     /// </summary>
-    /// <returns>Neighbouring path cells</returns>
-    public HexCell[] GetNeighbourPaths()
+    /// <returns>Neighbouring path tiles</returns>
+    public HexTile[] GetNeighbourPaths()
     {
         return neighbours.Where((n) => n != null && n.tileType == HexTileType.PATH).ToArray();
     }
 
     public void ClearNeighbours()
     {
-        neighbours = new HexCell[6];
+        neighbours = new HexTile[6];
     }
 
-    public void SetNeighbour(HexDirection direction, HexCell? cell)
+    public void SetNeighbour(HexDirection direction, HexTile? tile)
     {
-        neighbours[(int)direction] = cell;
+        neighbours[(int)direction] = tile;
     }
 
     public void SetMap(HexMap map)
@@ -199,33 +199,33 @@ public class HexCell : MonoBehaviourGizmos
 
     #region Custom Methods
     /// <summary>
-    /// Initialize a Hex cell
+    /// Initialize a Hex tile
     /// </summary>
-    /// <param name="coordinates">Cell coordinates</param>
-    /// <param name="tileType">Cell tile type</param>
+    /// <param name="coordinates">Tile coordinates</param>
+    /// <param name="tileType">Tile tile type</param>
     public void Init(HexCoordinates coordinates, HexTileType tileType = HexTileType.EMPTY)
     {
         SetCoordinates(coordinates);
         SetTypes(tileType);
 
-        gameObject.name = $"Hex Cell {coordinates}";
+        gameObject.name = $"Hex Tile {coordinates}";
 
         if (terrainParent == null)
             terrainParent = transform.Find("Terrain");
         if (propsParent == null)
             propsParent = transform.Find("Props");
 
-        DrawCell();
+        DrawTile();
     }
 
     /// <summary>
-    /// Draw the hex cell contents
+    /// Draw the hex tile contents
     /// <br /><br />
-    /// Note that this will clear cell terrain/props!
+    /// Note that this will clear tile terrain/props!
     /// </summary>
-    public void DrawCell()
+    public void DrawTile()
     {
-        PositionCell();
+        PositionTile();
         ClearTerrain();
 
         HexMapGenerator generator = HexMapGenerator.Instance;
@@ -241,7 +241,7 @@ public class HexCell : MonoBehaviourGizmos
             Instantiate(generator.SpawnBlock, propsParent);
             if (Waypoint.NextWaypoint != null)
             {
-                RotateProps(coordinates.Direction(Waypoint.NextWaypoint.HexCell.Coordinates));
+                RotateProps(coordinates.Direction(Waypoint.NextWaypoint.HexTile.Coordinates));
             }
         }
         // Create destination point and face towards the path
@@ -250,7 +250,7 @@ public class HexCell : MonoBehaviourGizmos
             Instantiate(generator.DestinationBlock, propsParent);
             if (Waypoint.PreviousWaypoint != null)
             {
-                RotateProps(coordinates.Direction(Waypoint.PreviousWaypoint.HexCell.Coordinates));
+                RotateProps(coordinates.Direction(Waypoint.PreviousWaypoint.HexTile.Coordinates));
             }
         }
     }
@@ -268,16 +268,16 @@ public class HexCell : MonoBehaviourGizmos
     }
 
     /// <summary>
-    /// Update hex cell position
+    /// Update hex tile position
     /// </summary>
-    public void PositionCell()
+    public void PositionTile()
     {
         float yPosition = height * HexConstants.HeightMultiplier;
         transform.position = coordinates.GetPosition(yPosition);
     }
 
     /// <summary>
-    /// Remove the cell props
+    /// Remove the tile props
     /// </summary>
     public void ClearTerrain()
     {
@@ -285,7 +285,7 @@ public class HexCell : MonoBehaviourGizmos
     }
 
     /// <summary>
-    /// Remove the cell props
+    /// Remove the tile props
     /// </summary>
     public void ClearProps()
     {
@@ -293,9 +293,9 @@ public class HexCell : MonoBehaviourGizmos
     }
 
     /// <summary>
-    /// Toggle whether the hex cell is selected
+    /// Toggle whether the hex tile is selected
     /// </summary>
-    /// <param name="selected">Whether cell is selected</param>
+    /// <param name="selected">Whether tile is selected</param>
     /// <param name="color">Selection color</param>
     public void ToggleSelection(bool selected, Color? color = null)
     {

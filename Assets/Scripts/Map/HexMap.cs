@@ -10,22 +10,22 @@ using UnityEngine;
 
 
 [Serializable]
-public class HexCellDictionary : SerializableDictionaryBase<string, HexCell> { }
+public class HexTileDictionary : SerializableDictionaryBase<string, HexTile> { }
 
 
 public class HexMap : GameSingleton<MonoBehaviour>
 {
     #region Attributes
-    [Title("Cells")]
+    [Title("Tiles")]
     [DisplayAsString]
     [ShowInInspector]
-    public int CellCount => cells.Count;
+    public int TileCount => tiles.Count;
     [DisplayAsString]
     [ShowInInspector]
-    public int SpawnLocations => SpawnCells.Count;
+    public int SpawnLocations => SpawnTiles.Count;
     [DisplayAsString]
     [ShowInInspector]
-    public int DestinationLocations => DestinationCells.Count;
+    public int DestinationLocations => DestinationTiles.Count;
 
     [Title("Waypoints")]
     [DisplayAsString]
@@ -38,13 +38,13 @@ public class HexMap : GameSingleton<MonoBehaviour>
     [SerializeField]
     private bool showWaypoints = false;
 
-    [TitleGroup("Cell Actions")]
-    [HorizontalGroup("Cell Actions/Actions")]
-    [Button("Prepare Cells", ButtonSizes.Medium)]
-    private void PrepareCellsClick() => PrepareCells();
-    [HorizontalGroup("Cell Actions/Actions")]
-    [Button("Draw Cells", ButtonSizes.Medium)]
-    private void DrawCellsClick() => DrawCells();
+    [TitleGroup("Tile Actions")]
+    [HorizontalGroup("Tile Actions/Actions")]
+    [Button("Prepare Tiles", ButtonSizes.Medium)]
+    private void PrepareTilesClick() => PrepareTiles();
+    [HorizontalGroup("Tile Actions/Actions")]
+    [Button("Draw Tiles", ButtonSizes.Medium)]
+    private void DrawTilesClick() => DrawTiles();
 
     [TitleGroup("Waypoint Actions")]
     [HorizontalGroup("Waypoint Actions/Actions")]
@@ -59,21 +59,21 @@ public class HexMap : GameSingleton<MonoBehaviour>
 
     #region Properties
     /// <summary>
-    /// Hex map cells.
+    /// Hex map tiles.
     /// <br /><br />
-    /// Cells are stored in a dictionary using their coordinates as a key!
+    /// Tiles are stored in a dictionary using their coordinates as a key!
     /// </summary>
-    public HexCellDictionary Cells => cells;
+    public HexTileDictionary Tiles => tiles;
     /// <summary>
-    /// List of hex map spawn cells (currently limited to 1!)
+    /// List of hex map spawn tiles (currently limited to 1!)
     /// </summary>
     [HideInInspector]
-    public List<HexCell> SpawnCells = new List<HexCell>();
+    public List<HexTile> SpawnTiles = new List<HexTile>();
     /// <summary>
-    /// List of hex map spawn cells (currently limited to 1!)
+    /// List of hex map spawn tiles (currently limited to 1!)
     /// </summary>
     [HideInInspector]
-    public List<HexCell> DestinationCells = new List<HexCell>();
+    public List<HexTile> DestinationTiles = new List<HexTile>();
     /// <summary>
     /// List of map path waypoints
     /// </summary>
@@ -81,15 +81,15 @@ public class HexMap : GameSingleton<MonoBehaviour>
 
     public bool ShowCoordinates => showCoordinates;
     public bool ShowWaypoints => showWaypoints;
-    public bool HasSpawn => SpawnCells.Count > 0;
-    public bool HasDestination => DestinationCells.Count > 0;
+    public bool HasSpawn => SpawnTiles.Count > 0;
+    public bool HasDestination => DestinationTiles.Count > 0;
     public PathWaypoint? FirstWaypoint => Waypoints.Count > 0 ? Waypoints[0] : null;
     public PathWaypoint? LastWaypoint => Waypoints.Count > 0 ? Waypoints[Waypoints.Count - 1] : null;
     #endregion
 
 
     [SerializeField, HideInInspector]
-    private HexCellDictionary cells = new HexCellDictionary();
+    private HexTileDictionary tiles = new HexTileDictionary();
     [SerializeField, HideInInspector]
     private List<PathWaypoint> waypoints = new List<PathWaypoint>();
 
@@ -98,19 +98,19 @@ public class HexMap : GameSingleton<MonoBehaviour>
     #region Unity Methods
     void Start()
     {
-        PrepareCells();
+        PrepareTiles();
     }
     #endregion
 
 
     #region Accessors
     /// <summary>
-    /// Set the grid cells
+    /// Set the grid tiles
     /// </summary>
-    /// <param name="cells">Grid cells</param>
-    public void SetCells(HexCellDictionary cells)
+    /// <param name="tiles">Grid tiles</param>
+    public void SetTiles(HexTileDictionary tiles)
     {
-        this.cells = cells;
+        this.tiles = tiles;
     }
     #endregion
 
@@ -119,107 +119,107 @@ public class HexMap : GameSingleton<MonoBehaviour>
     /// <summary>
     /// Prepare and redraw the entire map
     /// </summary>
-    private void DrawCells()
+    private void DrawTiles()
     {
-        PrepareCells();
+        PrepareTiles();
 
-        GetCellList().ForEach((cell) => cell.DrawCell());
+        GetTileList().ForEach((tile) => tile.DrawTile());
     }
 
     /// <summary>
-    /// Convert cell dictionary to list
+    /// Convert tile dictionary to list
     /// </summary>
-    /// <returns>Cell list</returns>
-    private List<HexCell> GetCellList() => Cells.Values.ToList();
+    /// <returns>Tile list</returns>
+    private List<HexTile> GetTileList() => Tiles.Values.ToList();
 
     /// <summary>
-    /// Convert a cell list to a cell dictionary.
+    /// Convert a tile list to a tile dictionary.
     /// <br /><br />
-    /// This provides much easier lookup by cell coordinate key.
+    /// This provides much easier lookup by tile coordinate key.
     /// </summary>
-    /// <param name="cellList">List of cells</param>
-    /// <returns>Cell dictionary</returns>
-    public HexCellDictionary CellsToDictionary(HexCell[] cellList)
+    /// <param name="tileList">List of tiles</param>
+    /// <returns>Tile dictionary</returns>
+    public HexTileDictionary TilesToDictionary(HexTile[] tileList)
     {
-        HexCellDictionary cellDictionary = new HexCellDictionary();
+        HexTileDictionary tileDictionary = new HexTileDictionary();
 
-        cellList.ForEach((cell) =>
+        tileList.ForEach((tile) =>
         {
-            cellDictionary.Add(cell.Coordinates.ToKey(), cell);
+            tileDictionary.Add(tile.Coordinates.ToKey(), tile);
         });
 
-        return cellDictionary;
+        return tileDictionary;
     }
 
     /// <summary>
-    /// Get a cell by its coordinates (if exists)
+    /// Get a tile by its coordinates (if exists)
     /// </summary>
-    /// <param name="cellDictionary">Cell list/dictionary</param>
+    /// <param name="tileDictionary">Tile list/dictionary</param>
     /// <param name="coordinates">Target coordinates</param>
-    /// <returns>Targeted cell (if exists)</returns>
-    public static HexCell? GetGridCell(HexCellDictionary cellDictionary, HexCoordinates coordinates)
+    /// <returns>Targeted tile (if exists)</returns>
+    public static HexTile? GetGridTile(HexTileDictionary tileDictionary, HexCoordinates coordinates)
     {
-        HexCell cell;
-        bool found = cellDictionary.TryGetValue((coordinates).ToKey(), out cell);
-        return found ? cell : null;
+        HexTile tile;
+        bool found = tileDictionary.TryGetValue((coordinates).ToKey(), out tile);
+        return found ? tile : null;
     }
 
     /// <summary>
-    /// Find hex map cells and calculate pathing
+    /// Find hex map tiles and calculate pathing
     /// </summary>
-    /// <returns>Prepared map cells</returns>
-    public HexCellDictionary PrepareCells()
+    /// <returns>Prepared map tiles</returns>
+    public HexTileDictionary PrepareTiles()
     {
-        var cells = FindCells();
+        var tiles = FindTiles();
 
         CalculatePaths();
 
-        return cells;
+        return tiles;
     }
 
     /// <summary>
-    /// Find grid cells and associate parents/neighbours
+    /// Find grid tiles and associate parents/neighbours
     /// </summary>
-    public HexCellDictionary FindCells()
+    public HexTileDictionary FindTiles()
     {
-        HexCell[] childCells = GetComponentsInChildren<HexCell>();
-        var cellDictionary = CellsToDictionary(childCells);
+        HexTile[] childTiles = GetComponentsInChildren<HexTile>();
+        var tileDictionary = TilesToDictionary(childTiles);
 
-        SpawnCells.Clear();
-        DestinationCells.Clear();
+        SpawnTiles.Clear();
+        DestinationTiles.Clear();
 
-        childCells.ForEach((cell) =>
+        childTiles.ForEach((tile) =>
         {
-            cell.SetMap(this);
-            cell.Waypoint.SetCell(cell);
+            tile.SetMap(this);
+            tile.Waypoint.SetTile(tile);
 
-            if (cell.PathingType == HexPathingType.SPAWN)
-                SpawnCells.Add(cell);
-            if (cell.PathingType == HexPathingType.DESTINATION)
-                DestinationCells.Add(cell);
+            if (tile.PathingType == HexPathingType.SPAWN)
+                SpawnTiles.Add(tile);
+            if (tile.PathingType == HexPathingType.DESTINATION)
+                DestinationTiles.Add(tile);
 
             // Calculate and associate neighbours
-            HexCoordinates coordinates = cell.Coordinates;
-            cell.ClearNeighbours();
+            HexCoordinates coordinates = tile.Coordinates;
+            tile.ClearNeighbours();
             HexCoordinates.Directions.Keys.ToList().ForEach((direction) =>
             {
-                HexCell? neighborCell = GetGridCell(cellDictionary, coordinates.Neighbor(direction));
-                cell.SetNeighbour(direction, neighborCell);
+                HexTile? neighbourTile = GetGridTile(tileDictionary, coordinates.Neighbor(direction));
+                tile.SetNeighbour(direction, neighbourTile);
             });
         });
 
-        SetCells(cellDictionary);
+        SetTiles(tileDictionary);
 
-        return cellDictionary;
+        return tileDictionary;
     }
 
     /// <summary>
     /// Calculate map pathing (after validation)
     /// </summary>
-    private List<HexCell> CalculatePaths()
+    private List<HexTile> CalculatePaths()
     {
-        List<HexCell> path = new List<HexCell>();
-        List<HexCell> emptyPath = new List<HexCell>();
+        List<HexTile> path = new List<HexTile>();
+        List<HexTile> emptyPath = new List<HexTile>();
 
         bool validStartEnd = ValidatePathEnds();
         if (!validStartEnd) return emptyPath;
@@ -228,53 +228,53 @@ public class HexMap : GameSingleton<MonoBehaviour>
         ResetWaypoints();
 
         // NOTE: Only supports a single spawn point for now!
-        HexCell currentCell = SpawnCells[0];
-        HexCell? nextCell = null;
+        HexTile currentTile = SpawnTiles[0];
+        HexTile? nextTile = null;
 
-        path.Add(currentCell);
+        path.Add(currentTile);
 
         int maxIterations = 1000;
         int iterations = 0;
 
         do
         {
-            nextCell = null;
+            nextTile = null;
 
             // TODO: Implement warning if a tile has more than 2 path neighbours!
-            if (currentCell.GetNeighbourPaths().Count() > 2)
+            if (currentTile.GetNeighbourPaths().Count() > 2)
             {
                 Debug.LogWarning("Paths may not have more than 2 path neighbours!");
                 return emptyPath;
             }
 
             // Pathing should find the first (untravelled) neighbour path and then exit
-            for (int i = 0; i < currentCell.Neighbours.Length; i++)
+            for (int i = 0; i < currentTile.Neighbours.Length; i++)
             {
                 iterations++;
 
-                var neighbour = currentCell.Neighbours[i];
+                var neighbour = currentTile.Neighbours[i];
                 if (neighbour == null || neighbour.TileType != HexTileType.PATH) continue;
 
                 // Prevent visiting previously travelled paths (causes infinite loops)!
                 bool alreadyInPath = path.Any((p) => neighbour.Coordinates == p.Coordinates);
                 if (alreadyInPath) continue;
 
-                nextCell = neighbour;
+                nextTile = neighbour;
                 break;
             }
 
-            if (nextCell == null) continue;
+            if (nextTile == null) continue;
 
-            path.Add(nextCell);
-            currentCell = nextCell;
-        } while (nextCell != null && iterations < maxIterations);
+            path.Add(nextTile);
+            currentTile = nextTile;
+        } while (nextTile != null && iterations < maxIterations);
 
         // Only link waypoints together once pathing is validated/completed
         PathWaypoint? previousWaypoint = null;
         int waypointNumber = 1;
-        path.ForEach((cell) =>
+        path.ForEach((tile) =>
         {
-            PathWaypoint currentWaypoint = cell.Waypoint;
+            PathWaypoint currentWaypoint = tile.Waypoint;
             currentWaypoint.Init(waypointNumber, previousWaypoint);
             Waypoints.Add(currentWaypoint);
 
@@ -293,27 +293,27 @@ public class HexMap : GameSingleton<MonoBehaviour>
     /// </summary>
     private bool ValidatePathEnds()
     {
-        int spawnCellCount = SpawnCells.Count;
-        if (spawnCellCount != 1)
+        int spawnTileCount = SpawnTiles.Count;
+        if (spawnTileCount != 1)
         {
-            Debug.LogWarning(spawnCellCount == 0 ? "No spawn cells found for pathing!" : "Too many spawn cells found for pathing!");
+            Debug.LogWarning(spawnTileCount == 0 ? "No spawn tiles found for pathing!" : "Too many spawn tiles found for pathing!");
             return false;
         }
-        else if (SpawnCells[0].GetNeighbourPaths().Length != 1)
+        else if (SpawnTiles[0].GetNeighbourPaths().Length != 1)
         {
-            Debug.LogWarning("Spawn cell must be at the start of a path!");
+            Debug.LogWarning("Spawn tile must be at the start of a path!");
             return false;
         }
 
-        int destinationCellCount = DestinationCells.Count;
-        if (destinationCellCount != 1)
+        int destinationTileCount = DestinationTiles.Count;
+        if (destinationTileCount != 1)
         {
-            Debug.LogWarning(destinationCellCount == 0 ? "No destination cells found for pathing!" : "Too many destination cells found for pathing!");
+            Debug.LogWarning(destinationTileCount == 0 ? "No destination tiles found for pathing!" : "Too many destination tiles found for pathing!");
             return false;
         }
-        else if (DestinationCells[0].GetNeighbourPaths().Length != 1)
+        else if (DestinationTiles[0].GetNeighbourPaths().Length != 1)
         {
-            Debug.LogWarning("Destination cell must be at the end of a path!");
+            Debug.LogWarning("Destination tile must be at the end of a path!");
             return false;
         }
 
@@ -327,7 +327,7 @@ public class HexMap : GameSingleton<MonoBehaviour>
     {
         Waypoints.ForEach((point) =>
         {
-            point.Reset();
+            point?.Reset();
         });
 
         Waypoints.Clear();

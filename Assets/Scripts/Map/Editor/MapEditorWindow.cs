@@ -11,12 +11,12 @@ using UnityEngine.InputSystem;
 public class MapEditorWindow : OdinEditorWindow
 {
     #region Properties
-    [Title("Selected Hex")]
+    [Title("Selected Tile")]
     [PropertyOrder(-3)]
     [LabelText("Coordinates")]
     [DisplayAsString]
     [ShowInInspector]
-    private string currentHexCoordinates => currentHex?.Coordinates.ToString() ?? "-";
+    private string currentTileCoordinates => currentTile?.Coordinates.ToString() ?? "-";
 
     [PropertyOrder(-2)]
     [SerializeField]
@@ -45,9 +45,9 @@ public class MapEditorWindow : OdinEditorWindow
     private int height;
     #endregion
 
-    private HexCell? currentHex => selections.Count > 0 ? selections.Last() : null;
+    private HexTile? currentTile => selections.Count > 0 ? selections.Last() : null;
     private bool hasSelection => selections.Count > 0;
-    private List<HexCell> selections = new List<HexCell>();
+    private List<HexTile> selections = new List<HexTile>();
     private Tool lastTool = Tool.None;
 
 
@@ -62,7 +62,7 @@ public class MapEditorWindow : OdinEditorWindow
 
     private void OnSelectionChange()
     {
-        // Always reset selected tool (will hide again if selecting hex)
+        // Always reset selected tool (will hide again if selecting tile)
         if (lastTool != Tool.None)
             Tools.current = lastTool;
 
@@ -72,13 +72,13 @@ public class MapEditorWindow : OdinEditorWindow
             return;
         }
 
-        // Clicking on an already selected cell will target objects inside the parent cell,
-        //   but we only care about the hex cell (hence checking the parents).
-        HexCell selectedHex = Selection.activeGameObject.GetComponent<HexCell>();
-        if (selectedHex == null)
+        // Clicking on an already selected tile will target objects inside the parent tile,
+        //   but we only care about the hex tile (hence checking the parents).
+        HexTile selectedTile = Selection.activeGameObject.GetComponent<HexTile>();
+        if (selectedTile == null)
         {
-            selectedHex = Selection.activeGameObject.GetComponentInParent<HexCell>();
-            if (selectedHex == null)
+            selectedTile = Selection.activeGameObject.GetComponentInParent<HexTile>();
+            if (selectedTile == null)
             {
                 ClearSelection();
                 return;
@@ -86,20 +86,20 @@ public class MapEditorWindow : OdinEditorWindow
         }
 
         // Set update form properties
-        SetFormValues(selectedHex);
+        SetFormValues(selectedTile);
 
         // Only store last tool if valid and hide current tool to prevent moving/rotating
         if (Tools.current != Tool.None)
             lastTool = Tools.current;
         Tools.current = Tool.None;
 
-        // Deselect hexes when they are re-selected
-        HexCell? alreadySelectedHex = selections.Find((hex) => hex.Coordinates == selectedHex.Coordinates);
-        if (alreadySelectedHex != null)
+        // Deselect tiles when they are re-selected
+        HexTile? alreadySelectedTile = selections.Find((tile) => tile.Coordinates == selectedTile.Coordinates);
+        if (alreadySelectedTile != null)
         {
             SetFormValues(null);
-            alreadySelectedHex.ToggleSelection(false);
-            selections.Remove(alreadySelectedHex);
+            alreadySelectedTile.ToggleSelection(false);
+            selections.Remove(alreadySelectedTile);
             return;
         }
 
@@ -107,49 +107,49 @@ public class MapEditorWindow : OdinEditorWindow
         if (!Keyboard.current.leftShiftKey.isPressed)
             ClearSelection();
 
-        selectedHex.ToggleSelection(true, selectionColor);
+        selectedTile.ToggleSelection(true, selectionColor);
 
         // TODO: Figure out how to clear previous selection???
         //Selection.objects = new GameObject[0];
         //Selection.objects = new GameObject[]{selectedHex.gameObject};
 
-        selections.Add(selectedHex);
+        selections.Add(selectedTile);
     }
     #endregion
 
 
     #region Custom Methods
     /// <summary>
-    /// Clear selected cells
+    /// Clear selected tiles
     /// </summary>
     private void ClearSelection()
     {
         if (selections.Count == 0) return;
 
-        selections.ForEach((hex) =>
+        selections.ForEach((tile) =>
         {
-            hex.ToggleSelection(false);
+            tile.ToggleSelection(false);
         });
         selections.Clear();
     }
 
     /// <summary>
-    /// Set the selected cell form values
+    /// Set the selected tile form values
     /// </summary>
-    /// <param name="selectedHex">Selected hex (or last selected)</param>
-    private void SetFormValues(HexCell? selectedHex)
+    /// <param name="selectedTile">Selected tile (or last selected)</param>
+    private void SetFormValues(HexTile? selectedTile)
     {
-        height = selectedHex != null ? selectedHex.Height : 0;
-        tileType = selectedHex != null ? selectedHex.TileType : HexTileType.EMPTY;
-        pathingType = selectedHex != null ? selectedHex.PathingType : HexPathingType.NORMAL;
+        height = selectedTile != null ? selectedTile.Height : 0;
+        tileType = selectedTile != null ? selectedTile.TileType : HexTileType.EMPTY;
+        pathingType = selectedTile != null ? selectedTile.PathingType : HexPathingType.NORMAL;
     }
 
     private void UpdateHeight()
     {
-        selections.ForEach((hex) =>
+        selections.ForEach((tile) =>
         {
-            hex.SetHeight(height);
-            hex.DrawCell();
+            tile.SetHeight(height);
+            tile.DrawTile();
         });
     }
 
@@ -157,19 +157,19 @@ public class MapEditorWindow : OdinEditorWindow
     {
         // TODO: Consider pathing options when changing to/from a path!!!
 
-        selections.ForEach((hex) =>
+        selections.ForEach((tile) =>
         {
-            hex.SetTypes(tileType, hex.PathingType);
-            hex.DrawCell();
+            tile.SetTypes(tileType, tile.PathingType);
+            tile.DrawTile();
         });
     }
 
     private void UpdatePathingType()
     {
-        selections.ForEach((hex) =>
+        selections.ForEach((tile) =>
         {
-            hex.SetTypes(hex.TileType, pathingType);
-            hex.DrawCell();
+            tile.SetTypes(tile.TileType, pathingType);
+            tile.DrawTile();
         });
     }
     #endregion

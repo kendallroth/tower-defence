@@ -44,9 +44,9 @@ public class PathWaypoint : MonoBehaviourGizmos
     /// </summary>
     public bool Connected => NextWaypoint != null || PreviousWaypoint != null;
     /// <summary>
-    /// Parent hex cell
+    /// Parent hex tile
     /// </summary>
-    public HexCell HexCell => hexCell;
+    public HexTile HexTile => hexTile;
     #endregion
 
 
@@ -55,7 +55,7 @@ public class PathWaypoint : MonoBehaviourGizmos
     [SerializeField, HideInInspector]
     private PathWaypoint? nextWaypoint = null;
     [SerializeField, HideInInspector]
-    private HexCell hexCell;
+    private HexTile hexTile;
 
     private float waypointMarkerRadius = 0.1f;
     public int Index => Number - 1;
@@ -66,9 +66,9 @@ public class PathWaypoint : MonoBehaviourGizmos
 
 
     #region Accessors
-    public void SetCell(HexCell cell)
+    public void SetTile(HexTile tile)
     {
-        hexCell = cell;
+        hexTile = tile;
     }
 
     /// <summary>
@@ -121,7 +121,7 @@ public class PathWaypoint : MonoBehaviourGizmos
     {
         nextWaypoint = null;
         previousWaypoint = null;
-        this.number = 0;
+        number = 0;
     }
     #endregion
 
@@ -129,8 +129,8 @@ public class PathWaypoint : MonoBehaviourGizmos
     #region Debug Methods
     public override void DrawGizmos()
     {
-        bool showWaypoints = hexCell?.HexMap?.ShowWaypoints ?? true;
-        if (!showWaypoints || hexCell?.TileType != HexTileType.PATH) return;
+        bool showWaypoints = hexTile?.HexMap?.ShowWaypoints ?? true;
+        if (!showWaypoints || hexTile?.TileType != HexTileType.PATH) return;
 
         Draw.WireSphere(transform.position, waypointMarkerRadius, Connected ? Color.blue : Color.red);
         Vector3 labelPosition = transform.position + Vector3.up * waypointMarkerRadius * 2 + Vector3.forward * waypointMarkerRadius * 2;

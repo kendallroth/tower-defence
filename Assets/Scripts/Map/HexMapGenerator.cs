@@ -37,7 +37,7 @@ public class HexMapGenerator : GameSingleton<HexMapGenerator>
     [Required]
     [AssetsOnly]
     [SerializeField]
-    private HexCell cellPrefab;
+    private HexTile tilePrefab;
 
     [SerializeField]
     private HexTileType defaultTileType = HexTileType.GRASS;
@@ -56,7 +56,7 @@ public class HexMapGenerator : GameSingleton<HexMapGenerator>
     [Button("Generate Grid", ButtonSizes.Medium), GUIColor(0.4f, 0.8f, 1)]
     private void GenerateClick()
     {
-        bool hasGrid = GetComponentsInChildren<HexCell>().Length > 0;
+        bool hasGrid = GetComponentsInChildren<HexTile>().Length > 0;
         if (hasGrid)
         {
             EditorUtility.DisplayDialog("Already generated", "Map has already been generated and must be reset first!", "OK");
@@ -71,7 +71,7 @@ public class HexMapGenerator : GameSingleton<HexMapGenerator>
     [HorizontalGroup("Generator/Generate", 0.25f)]
     private void ResetClick()
     {
-        bool hasGrid = GetComponentsInChildren<HexCell>().Length > 0;
+        bool hasGrid = GetComponentsInChildren<HexTile>().Length > 0;
         if (hasGrid)
         {
             bool confirmation = EditorUtility.DisplayDialog("Regenerate map?", "Are you sure you want to regenerate the map?", "Confirm", "Cancel");
@@ -98,7 +98,7 @@ public class HexMapGenerator : GameSingleton<HexMapGenerator>
     private void GenerateGrid()
     {
         // Prevent regenerating grid over existing grid
-        bool hasGrid = GetComponentsInChildren<HexCell>().Length > 0;
+        bool hasGrid = GetComponentsInChildren<HexTile>().Length > 0;
         if (hasGrid)
         {
             Debug.LogWarning("Grid has already been generated!");
@@ -119,33 +119,33 @@ public class HexMapGenerator : GameSingleton<HexMapGenerator>
         int widthStart = CenterGrid ? -halfWidth : 0;
         int widthEnd = CenterGrid ? evenWidth ? halfWidth : halfWidth + 1 : width;
 
-        HexCell[] cells = new HexCell[height * width];
+        HexTile[] tiles = new HexTile[height * width];
 
         for (int z = heightStart, i = 0; z < heightEnd; z++)
         {
             for (int x = widthStart; x < widthEnd; x++)
             {
-                CreateCell(x, z, i++);
+                CreateTile(x, z, i++);
             }
         }
 
-        GetComponent<HexMap>().PrepareCells();
+        GetComponent<HexMap>().PrepareTiles();
     }
 
     /// <summary>
-    /// Create a new Hex cell
+    /// Create a new Hex tile
     /// </summary>
-    /// <param name="x">Cell x offset coordinate</param>
-    /// <param name="z">Cell z offset coordinate</param>
-    /// <param name="i">Cell index</param>
-    /// <returns>New Hex cell</returns>
-    private HexCell CreateCell(int x, int z, int i)
+    /// <param name="x">Tile x offset coordinate</param>
+    /// <param name="z">Tile z offset coordinate</param>
+    /// <param name="i">Tile index</param>
+    /// <returns>New Hex tile</returns>
+    private HexTile CreateTile(int x, int z, int i)
     {
         HexCoordinates coordinates = HexCoordinates.FromOffset(x, z);
 
-        HexCell cell = Instantiate(cellPrefab, transform);
-        cell.Init(coordinates, defaultTileType);
-        return cell;
+        HexTile tile = Instantiate(tilePrefab, transform);
+        tile.Init(coordinates, defaultTileType);
+        return tile;
     }
 
     /// <summary>
@@ -167,11 +167,11 @@ public class HexMapGenerator : GameSingleton<HexMapGenerator>
     /// </summary>
     private void ResetMap()
     {
-        HexCell[] cells = GetComponentsInChildren<HexCell>();
-        cells.ForEach((cell) =>
+        HexTile[] tiles = GetComponentsInChildren<HexTile>();
+        tiles.ForEach((tile) =>
         {
-            if (cell == null) return;
-            cell.gameObject.DestroySelf();
+            if (tile == null) return;
+            tile.gameObject.DestroySelf();
         });
     }
     #endregion

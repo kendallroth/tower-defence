@@ -18,8 +18,8 @@ public class TileSelector : GameSingleton<MonoBehaviour>
 
 
     #region Properties
-    public HexCell? SelectedTile { get; private set; } = null;
-    public HexCell? HighlightedTile { get; private set; } = null;
+    public HexTile? SelectedTile { get; private set; } = null;
+    public HexTile? HighlightedTile { get; private set; } = null;
     #endregion
 
     private Color mixedColor => Color.Lerp(highlightColor, selectionColor, 0.75f);
@@ -49,7 +49,7 @@ public class TileSelector : GameSingleton<MonoBehaviour>
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, 100f, tileLayer))
         {
-            HexCell tile = hit.collider.GetComponent<HexCell>();
+            HexTile tile = hit.collider.GetComponent<HexTile>();
             if (tile == null) return;
 
             bool alreadyHighlighted = CompareTiles(HighlightedTile, tile);
@@ -73,7 +73,7 @@ public class TileSelector : GameSingleton<MonoBehaviour>
     /// <param name="other">Comparison tile</param>
     /// <param name="useCoordinates">Whether to equate by coordinates (if references are lost)</param>
     /// <returns>Whether two hex tiles are the same</returns>
-    private bool CompareTiles(HexCell? target, HexCell? other, bool useCoordinates = false)
+    private bool CompareTiles(HexTile? target, HexTile? other, bool useCoordinates = false)
     {
         if (target == null || other == null) return false;
 
@@ -84,7 +84,7 @@ public class TileSelector : GameSingleton<MonoBehaviour>
     /// Apply a highlight to a tile
     /// </summary>
     /// <param name="tile">Highlighted tile</param>
-    public void HighlightTile(HexCell tile)
+    public void HighlightTile(HexTile tile)
     {
         ClearHighlight();
 
@@ -120,7 +120,7 @@ public class TileSelector : GameSingleton<MonoBehaviour>
     /// </summary>
     /// <param name="tile">Selected tile</param>
     /// <param name="applyHighlight">Whether to apply highlight over selection</param>
-    public void SelectTile(HexCell tile, bool applyHighlight = false)
+    public void SelectTile(HexTile tile, bool applyHighlight = false)
     {
         var previousTile = SelectedTile;
 

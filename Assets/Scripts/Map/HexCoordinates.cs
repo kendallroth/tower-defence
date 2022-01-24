@@ -56,7 +56,7 @@ public struct HexCoordinates
     public int S => s;
 
     /// <summary>
-    /// Hex cell coordinate offsets by cardinal direction
+    /// Hex tile coordinate offsets by cardinal direction
     /// </summary>
     static public Dictionary<HexDirection, HexCoordinates> Directions = new Dictionary<HexDirection, HexCoordinates>
     {
@@ -193,7 +193,7 @@ public struct HexCoordinates
         // NOTE: Non-neighbours should return null (may not map to direction)!
         if (offset.Length() != 1)
         {
-            Debug.LogWarning($"Cells being compared for direction are not adjacent ({ToString()} - {other})!");
+            Debug.LogWarning($"Tiles being compared for direction are not adjacent ({ToString()} - {other})!");
             return null;
         }
 
@@ -216,10 +216,10 @@ public struct HexCoordinates
     }
 
     /// <summary>
-    /// Determine a hex cell's grid position
+    /// Determine a hex tile's grid position
     /// </summary>
     /// <param name="y">Position y-level</param>
-    /// <returns>Hex cell grid position</returns>
+    /// <returns>Hex tile grid position</returns>
     public Vector3 GetPosition(float y = 0f)
     {
         return ToOffset().GetPosition(y);
