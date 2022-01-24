@@ -98,9 +98,9 @@ public class HexCell : MonoBehaviourGizmos
     {
         get
         {
-            if (hexMap == null)
-                hexMap = GetComponentInParent<HexMap>();
-            return hexMap;
+            if (_hexMap == null)
+                _hexMap = GetComponentInParent<HexMap>();
+            return _hexMap;
         }
     }
     /// <summary>
@@ -110,9 +110,9 @@ public class HexCell : MonoBehaviourGizmos
     {
         get
         {
-            if (waypoint == null)
-                waypoint = GetComponentInChildren<PathWaypoint>();
-            return waypoint;
+            if (_waypoint == null)
+                _waypoint = GetComponentInChildren<PathWaypoint>();
+            return _waypoint;
         }
     }
     #endregion
@@ -120,8 +120,8 @@ public class HexCell : MonoBehaviourGizmos
 
     [SerializeField, HideInInspector]
     private HexCell?[] neighbours = new HexCell[6];
-    private HexMap hexMap;
-    private PathWaypoint waypoint;
+    private HexMap _hexMap;
+    private PathWaypoint _waypoint;
     private LineRenderer lineRenderer;
 
 
@@ -161,9 +161,7 @@ public class HexCell : MonoBehaviourGizmos
     /// <returns>Neighbouring path cells</returns>
     public HexCell[] GetNeighbourPaths()
     {
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
         return neighbours.Where((n) => n != null && n.tileType == HexTileType.PATH).ToArray();
-#pragma warning restore CS8619
     }
 
     public void ClearNeighbours()
@@ -178,7 +176,7 @@ public class HexCell : MonoBehaviourGizmos
 
     public void SetMap(HexMap map)
     {
-        hexMap = map;
+        _hexMap = map;
     }
 
     public void SetCoordinates(HexCoordinates coordinates)
@@ -211,7 +209,6 @@ public class HexCell : MonoBehaviourGizmos
         SetTypes(tileType);
 
         gameObject.name = $"Hex Cell {coordinates}";
-        //waypoint = GetComponentInChildren<PathWaypoint>();
 
         if (terrainParent == null)
             terrainParent = transform.Find("Terrain");
@@ -238,11 +235,36 @@ public class HexCell : MonoBehaviourGizmos
         // TODO: Only clear props if necessary (may have spawned other props)???
         ClearProps();
 
-        if (pathingType == HexPathingType.SPAWN || pathingType == HexPathingType.DESTINATION)
+        // Create spawn point and face towards the path
+        if (pathingType == HexPathingType.SPAWN)
         {
-            GameObject prefab = pathingType == HexPathingType.SPAWN ? generator.SpawnBlock : generator.DestinationBlock;
-            Instantiate(prefab, propsParent);
+            Instantiate(generator.SpawnBlock, propsParent);
+            if (Waypoint.NextWaypoint != null)
+            {
+                RotateProps(coordinates.Direction(Waypoint.NextWaypoint.HexCell.Coordinates));
+            }
         }
+        // Create destination point and face towards the path
+        if (pathingType == HexPathingType.DESTINATION)
+        {
+            Instantiate(generator.DestinationBlock, propsParent);
+            if (Waypoint.PreviousWaypoint != null)
+            {
+                RotateProps(coordinates.Direction(Waypoint.PreviousWaypoint.HexCell.Coordinates));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Rotate props towards a direction
+    /// </summary>
+    /// <param name="direction">Target direction</param>
+    public void RotateProps(HexDirection? direction)
+    {
+        int angle = direction != null ? Coordinates.Angle((HexDirection)direction) : 0;
+
+        // TODO: Consider applying rotation to specific objects if rotating props parent is bad?
+        propsParent.rotation = Quaternion.Euler(0, angle, 0);
     }
 
     /// <summary>

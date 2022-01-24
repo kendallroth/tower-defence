@@ -68,6 +68,16 @@ public struct HexCoordinates
         { HexDirection.NW, new HexCoordinates(0, -1, 1) },
     };
 
+    static public Dictionary<HexDirection, int> DirectionAngles = new Dictionary<HexDirection, int>
+    {
+        { HexDirection.NE, 30 },
+        { HexDirection.E, 90 },
+        { HexDirection.SE, 150 },
+        { HexDirection.SW, 210 },
+        { HexDirection.W, 270 },
+        { HexDirection.NW, 330 },
+    };
+
     // TODO: Determine if tracking diagonals will be beneficial? Will need to modify shape to match above...
     //         https://www.redblobgames.com/grids/hexagons/codegen/output/lib.cs
 
@@ -140,6 +150,29 @@ public struct HexCoordinates
 
     #region Directions
     /// <summary>
+    /// Calculate world space angle to to another hex (ie. to face towards)
+    /// </summary>
+    /// <param name="other">Neighbour coordinates</param>
+    /// <returns>World space angle to neighbour</returns>
+    public int Angle(HexCoordinates other)
+    {
+        HexDirection? direction = Direction(other);
+        if (direction == null) return 0;
+
+        return DirectionAngles[(HexDirection)direction];
+    }
+
+    /// <summary>
+    /// Calculate world space angle to to another hex (ie. to face towards)
+    /// </summary>
+    /// <param name="direction">Neighbour direction</param>
+    /// <returns>World space angle of direction</returns>
+    public int Angle(HexDirection direction)
+    {
+        return DirectionAngles[direction];
+    }
+
+    /// <summary>
     /// Get the hex coordinate offset for a direction
     /// </summary>
     /// <param name="direction">Hex direction</param>
@@ -147,6 +180,29 @@ public struct HexCoordinates
     public HexCoordinates Direction(HexDirection direction)
     {
         return Directions[direction];
+    }
+
+    /// <summary>
+    /// Calculate direction to a neighbour
+    /// </summary>
+    /// <param name="other">Neighbour coordinates</param>
+    /// <returns>Direction to neighbour</returns>
+    public HexDirection? Direction(HexCoordinates other)
+    {
+        HexCoordinates offset = other.Subtract(this);
+        // NOTE: Non-neighbours should return null (may not map to direction)!
+        if (offset.Length() != 1)
+        {
+            Debug.LogWarning($"Cells being compared for direction are not adjacent ({ToString()} - {other})!");
+            return null;
+        }
+
+        foreach (HexDirection key in Directions.Keys)
+        {
+            if (Directions[key] == offset) return key;
+        }
+
+        return null;
     }
 
     /// <summary>

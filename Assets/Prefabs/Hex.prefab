@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5357945653624947564}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Props
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5357945654118175442}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -75,7 +75,7 @@ GameObject:
   - component: {fileID: 5357945654312266481}
   - component: {fileID: 7447103363334792379}
   - component: {fileID: 6763391872031236641}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Hex
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -130,11 +130,18 @@ MonoBehaviour:
     q: 0
     r: 0
     s: 0
-  height: 0
   tileType: 0
   pathingType: 0
+  height: 0
   terrainParent: {fileID: 5357945654118175442}
   propsParent: {fileID: 5357945653624947564}
+  neighbours:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!120 &6763391872031236641
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -142,7 +149,7 @@ LineRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5357945654312266484}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -203,8 +210,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 0.9490196, b: 0, a: 0}
-      key1: {r: 1, g: 0.9490196, b: 0, a: 0}
+      key0: {r: 1, g: 0.9490196, b: 0, a: 1}
+      key1: {r: 1, g: 0.9490196, b: 0, a: 1}
       key2: {r: 0, g: 0.8155856, b: 1, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -248,7 +255,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7127104962165416868}
   - component: {fileID: 4953889092667836023}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Waypoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -282,6 +289,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2ca797703df814468141f1a762799ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  number: 0
+  previousWaypoint: {fileID: 0}
+  nextWaypoint: {fileID: 0}
+  hexCell: {fileID: 0}
 --- !u!1001 &6621560939497110034
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -336,6 +347,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0d0ac950689a9da49aff7a72a920dd96, type: 3}
       propertyPath: m_Name
       value: hex_empty
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d0ac950689a9da49aff7a72a920dd96, type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0d0ac950689a9da49aff7a72a920dd96, type: 3}

@@ -43,6 +43,10 @@ public class PathWaypoint : MonoBehaviourGizmos
     /// Whether waypoint is connected to any other waypoints
     /// </summary>
     public bool Connected => NextWaypoint != null || PreviousWaypoint != null;
+    /// <summary>
+    /// Parent hex cell
+    /// </summary>
+    public HexCell HexCell => hexCell;
     #endregion
 
 
