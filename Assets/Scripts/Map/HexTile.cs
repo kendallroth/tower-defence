@@ -94,32 +94,17 @@ public class HexTile : MonoBehaviourGizmos
     /// <summary>
     /// Hex tile parent map
     /// </summary>
-    public HexMap HexMap
-    {
-        get
-        {
-            if (_hexMap == null)
-                _hexMap = GetComponentInParent<HexMap>();
-            return _hexMap;
-        }
-    }
+    public HexMap HexMap => _hexMap ??= GetComponentInChildren<HexMap>();
     /// <summary>
     /// Hex tile path waypoint
     /// </summary>
-    public PathWaypoint Waypoint
-    {
-        get
-        {
-            if (_waypoint == null)
-                _waypoint = GetComponentInChildren<PathWaypoint>();
-            return _waypoint;
-        }
-    }
+    public PathWaypoint Waypoint => _waypoint ??= GetComponentInChildren<PathWaypoint>();
     #endregion
 
 
     [SerializeField, HideInInspector]
     private HexTile?[] neighbours = new HexTile[6];
+    [SerializeField, HideInInspector]
     private HexMap _hexMap;
     private PathWaypoint _waypoint;
     private LineRenderer lineRenderer;

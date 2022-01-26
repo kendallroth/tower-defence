@@ -4,6 +4,7 @@ using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -26,7 +27,7 @@ public class MapEditorWindow : OdinEditorWindow
     [PropertyOrder(-1)]
     [Button("@\"Clear Selection (\" + selections.Count + \")\"", ButtonSizes.Medium)]
     [DisableIf("@!hasSelection")]
-    private void ClearClick() => ClearSelection();
+    private void ClearClick() => ClearSelectedTiles();
 
     [Title("Update")]
     [DisableIf("@!hasSelection")]
@@ -68,61 +69,69 @@ public class MapEditorWindow : OdinEditorWindow
 
         if (!Selection.activeGameObject)
         {
-            ClearSelection();
+            ClearSelectedTiles();
             return;
         }
 
         // Clicking on an already selected tile will target objects inside the parent tile,
         //   but we only care about the hex tile (hence checking the parents).
         HexTile selectedTile = Selection.activeGameObject.GetComponent<HexTile>();
-        if (selectedTile == null)
-        {
-            selectedTile = Selection.activeGameObject.GetComponentInParent<HexTile>();
-            if (selectedTile == null)
-            {
-                ClearSelection();
-                return;
-            }
-        }
+        selectedTile ??= Selection.activeGameObject.GetComponentInParent <HexTile>();
 
+        if (selectedTile != null)
+            HandleTileSelect(selectedTile);
+        else
+            ClearSelectedTiles();
+    }
+    #endregion
+
+
+    #region Custom Methods
+    private void HandleTileSelect(HexTile tile)
+    {
         // Set update form properties
-        SetFormValues(selectedTile);
+        SetFormValues(tile);
+
+        // Allow selecting multiple tiles with shift
+        bool selectingMultiple = Keyboard.current.leftShiftKey.isPressed;
 
         // Only store last tool if valid and hide current tool to prevent moving/rotating
         if (Tools.current != Tool.None)
             lastTool = Tools.current;
         Tools.current = Tool.None;
 
-        // Deselect tiles when they are re-selected
-        HexTile? alreadySelectedTile = selections.Find((tile) => tile.Coordinates == selectedTile.Coordinates);
+        // Selecting a tile again typically will unselect it, although this changes when
+        //   multiple tiles are being selected.
+        HexTile? alreadySelectedTile = selections.Find((t) => t.Coordinates == tile.Coordinates);
         if (alreadySelectedTile != null)
         {
-            SetFormValues(null);
+            if (selectingMultiple) return;
+
             alreadySelectedTile.ToggleSelection(false);
             selections.Remove(alreadySelectedTile);
+            SetFormValues(null);
+            DeselectCurrentObject();
             return;
         }
 
-        // Allow selecting multiple tiles with shift
-        if (!Keyboard.current.leftShiftKey.isPressed)
-            ClearSelection();
+        if (!selectingMultiple)
+            ClearSelectedTiles();
 
-        selectedTile.ToggleSelection(true, selectionColor);
-
-        // TODO: Figure out how to clear previous selection???
-        //Selection.objects = new GameObject[0];
-        //Selection.objects = new GameObject[]{selectedHex.gameObject};
-
-        selections.Add(selectedTile);
+        tile.ToggleSelection(true, selectionColor);
+        selections.Add(tile);
     }
-    #endregion
 
-
-    #region Custom Methods
     /// <summary>
-    /// Clear selected tiles
+    /// Deselecting currently selected objects must be done after the selection handler
+    ///   has completed, otherwise any children will be set as selected object!
     /// </summary>
-    private void ClearSelection()
+    private async void DeselectCurrentObject()
+    {
+        await Task.Yield();
+        Selection.activeGameObject = null;
+    }
+
+    private void ClearSelectedTiles()
     {
         if (selections.Count == 0) return;
 

@@ -140,8 +140,8 @@ public class PathWaypoint : MonoBehaviourGizmos
         {
             Vector3 directionToNext = transform.DirectionTo(NextWaypoint.transform);
             Draw.Arrow(
-                transform.position + directionToNext * waypointMarkerRadius * 2,
-                NextWaypoint.transform.position - directionToNext * waypointMarkerRadius * 2,
+                transform.position + directionToNext * waypointMarkerRadius * 2 + Vector3.up * 0.01f,
+                NextWaypoint.transform.position - directionToNext * waypointMarkerRadius * 2 + Vector3.up * 0.01f,
                 transform.up,
                 waypointMarkerRadius,
                 Color.blue
