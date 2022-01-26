@@ -15,7 +15,6 @@ There are several assets that must be installed to work with the project!
   - Medieval Builder Kit (Kenney)
   - Prefab Painter (nTools)
   - Message Dispatched (ooti)
-  - Serialized Dictionary Light (Rotary Heart)
   - Tower Defence Kit (Kenney)
 - `Plugins/`
   - Odin Inspector (Sirenix)

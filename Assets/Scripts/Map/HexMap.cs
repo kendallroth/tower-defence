@@ -1,6 +1,5 @@
 #nullable enable
 
-using RotaryHeart.Lib.SerializableDictionary;
 using Sirenix.OdinInspector;
 using System;
 using System.Collections;
@@ -8,10 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-
 [Serializable]
-public class HexTileDictionary : SerializableDictionaryBase<string, HexTile> { }
-
+public class HexTileDictionary : UnitySerializedDictionary<string, HexTile> { }
 
 public class HexMap : GameSingleton<MonoBehaviour>
 {

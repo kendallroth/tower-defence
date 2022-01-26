@@ -9,31 +9,50 @@ public class TileSelector : GameSingleton<MonoBehaviour>
 {
     #region Attributes
     [SerializeField]
-    private LayerMask tileLayer;
+    private LayerMask _tileLayer;
+
+    [Header("Functionality")]
     [SerializeField]
-    private Color selectionColor;
+    private bool _clickEnabled = true;
     [SerializeField]
-    private Color highlightColor;
+    private bool _hoverEnabled = true;
+
+    [Header("Colors")]
+    [SerializeField]
+    private Color _selectionColor;
+    [SerializeField]
+    private Color _highlightColor;
     #endregion
 
 
     #region Properties
-    public HexTile? SelectedTile { get; private set; } = null;
-    public HexTile? HighlightedTile { get; private set; } = null;
+    public HexTile? selectedTile { get; private set; } = null;
+    public HexTile? highlightedTile { get; private set; } = null;
     #endregion
 
-    private Color mixedColor => Color.Lerp(highlightColor, selectionColor, 0.75f);
+    private Color _mixedColor => Color.Lerp(_highlightColor, _selectionColor, 0.75f);
+    private PlayerInput _playerInput;
 
 
     #region Unity Methods
-    void Start()
+    private void Awake()
     {
-
+        _playerInput = new PlayerInput();
     }
 
     void Update()
     {
         CalculateSelection();
+    }
+
+    private void OnEnable()
+    {
+        _playerInput.Camera.Enable();
+    }
+
+    private void OnDisable()
+    {
+        _playerInput.Camera.Disable();
     }
     #endregion
 
@@ -47,18 +66,23 @@ public class TileSelector : GameSingleton<MonoBehaviour>
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
 
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 100f, tileLayer))
+        if (Physics.Raycast(ray, out hit, 100f, _tileLayer))
         {
             HexTile tile = hit.collider.GetComponent<HexTile>();
             if (tile == null) return;
 
-            bool alreadyHighlighted = CompareTiles(HighlightedTile, tile);
-            if (!alreadyHighlighted)
+            bool alreadyHighlighted = CompareTiles(highlightedTile, tile);
+            if (!alreadyHighlighted && _hoverEnabled)
                 HighlightTile(tile);
 
-            // TODO: Move this to new input system handler!
-            if (Mouse.current.leftButton.wasPressedThisFrame)
-                SelectTile(tile, true);
+            if (_playerInput.Interaction.Select.triggered)
+            {
+                Debug.Log("Triggered");
+                if (_clickEnabled)
+                    SelectTile(tile, true);
+                else
+                    DeselectTile();
+            }
         }
         else
         {
@@ -89,11 +113,11 @@ public class TileSelector : GameSingleton<MonoBehaviour>
         ClearHighlight();
 
         // Selected tiles should receive a mixed colour for indication
-        bool selected = CompareTiles(tile, SelectedTile);
-        Color color = selected ? mixedColor : highlightColor;
+        bool selected = CompareTiles(tile, selectedTile);
+        Color color = selected ? _mixedColor : _highlightColor;
 
         tile.ToggleSelection(true, color);
-        HighlightedTile = tile;
+        highlightedTile = tile;
     }
 
     /// <summary>
@@ -102,17 +126,17 @@ public class TileSelector : GameSingleton<MonoBehaviour>
     public void ClearHighlight()
     {
         // Selected tiles should retain selection after removing highlight
-        bool selected = CompareTiles(HighlightedTile, SelectedTile);
+        bool selected = CompareTiles(highlightedTile, selectedTile);
         if (selected)
         {
-            HighlightedTile!.ToggleSelection(true, selectionColor);
+            highlightedTile!.ToggleSelection(true, _selectionColor);
         }
-        else if (HighlightedTile != null)
+        else if (highlightedTile != null)
         {
-            HighlightedTile.ToggleSelection(false);
+            highlightedTile.ToggleSelection(false);
         }
 
-        HighlightedTile = null;
+        highlightedTile = null;
     }
 
     /// <summary>
@@ -122,7 +146,7 @@ public class TileSelector : GameSingleton<MonoBehaviour>
     /// <param name="applyHighlight">Whether to apply highlight over selection</param>
     public void SelectTile(HexTile tile, bool applyHighlight = false)
     {
-        var previousTile = SelectedTile;
+        var previousTile = selectedTile;
 
         // Selecting a cell twice should deselect it
         bool alreadySelected = CompareTiles(previousTile, tile);
@@ -131,13 +155,13 @@ public class TileSelector : GameSingleton<MonoBehaviour>
             DeselectTile();
 
             if (applyHighlight)
-                previousTile!.ToggleSelection(true, highlightColor);
+                previousTile!.ToggleSelection(true, _highlightColor);
         }
         else
         {
             DeselectTile();
-            tile.ToggleSelection(true, !applyHighlight ? selectionColor : mixedColor);
-            SelectedTile = tile;
+            tile.ToggleSelection(true, !applyHighlight ? _selectionColor : _mixedColor);
+            selectedTile = tile;
         }
     }
 
@@ -146,10 +170,18 @@ public class TileSelector : GameSingleton<MonoBehaviour>
     /// </summary>
     public void DeselectTile()
     {
-        if (SelectedTile == null) return;
+        if (selectedTile == null) return;
 
-        SelectedTile.ToggleSelection(false);
-        SelectedTile = null;
+        selectedTile.ToggleSelection(false);
+        selectedTile = null;
+    }
+    #endregion
+
+
+    #region Input Actions
+    private void HandleSelect(InputAction.CallbackContext ctx)
+    {
+        //ResetPosition();
     }
     #endregion
 }

@@ -1,6 +1,4 @@
 using Sirenix.OdinInspector;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,36 +9,36 @@ public class CameraManager : MonoBehaviour
     [InfoBox("Positioning values are applied when game starts and during camera resets.")]
     [DisableInPlayMode]
     [SerializeField]
-    private Vector3 startingOffset;
+    private Vector3 _startingOffset;
     [DisableInPlayMode]
     [SerializeField]
-    private Vector3 startingRotation;
+    private Vector3 _startingRotation;
 
     [Header("Scroll")]
     [SerializeField]
     [Range(0f, 50f)]
-    private float scrollSpeed = 10f;
+    private float _scrollSpeed = 10f;
     [SerializeField]
-    private Vector2 scrollRange;
+    private Vector2 _scrollRange = new Vector2(8, 15);
 
     [Header("Movement")]
     /// <summary>
     /// Maximum camera movement/offset limits
     /// </summary>
     [SerializeField]
-    private Vector2 offsetLimit;
+    private Vector2 _offsetLimit;
     [Range(5f, 25f)]
     [SerializeField]
-    private float dragSpeed = 10f;
+    private float _dragSpeed = 10f;
     [Range(5f, 25f)]
     [SerializeField]
-    private float panSpeed = 10f;
+    private float _panSpeed = 10f;
     [SerializeField]
-    private bool borderPan = true;
+    private bool _borderPan = true;
     [Range(0, 20)]
-    [DisableIf("@!borderPan")]
+    [DisableIf("@!_borderPan")]
     [SerializeField]
-    private int borderPanWidth = 10;
+    private int _borderPanWidth = 10;
     #endregion
 
 
@@ -48,15 +46,15 @@ public class CameraManager : MonoBehaviour
     #endregion
 
 
-    private Camera mainCamera;
-    private PlayerInput playerInput;
+    private Camera _mainCamera;
+    private PlayerInput _playerInput;
 
 
     #region Unity Methods
     void Awake()
     {
-        mainCamera = Camera.main;
-        playerInput = new PlayerInput();
+        _mainCamera = Camera.main;
+        _playerInput = new PlayerInput();
 
         ResetPosition();
     }
@@ -66,22 +64,22 @@ public class CameraManager : MonoBehaviour
 
     }
 
-    private void OnEnable()
-    {
-        playerInput.Camera.Enable();
-        playerInput.Camera.Reset.performed += HandleReset;
-    }
-
-    private void OnDisable()
-    {
-        playerInput.Camera.Disable();
-        playerInput.Camera.Reset.performed -= HandleReset;
-    }
-
     private void LateUpdate()
     {
         HandleMovement();
         HandleScroll();
+    }
+
+    private void OnEnable()
+    {
+        _playerInput.Camera.Enable();
+        _playerInput.Camera.Reset.performed += HandleReset;
+    }
+
+    private void OnDisable()
+    {
+        _playerInput.Camera.Disable();
+        _playerInput.Camera.Reset.performed -= HandleReset;
     }
     #endregion
 
@@ -95,51 +93,51 @@ public class CameraManager : MonoBehaviour
     /// </summary>
     private void HandleMovement()
     {
-        bool dragging = playerInput.Camera.Drag.ReadValue<float>() > 0;
-        Vector2 dragInput = dragging ? -playerInput.Camera.MouseDelta.ReadValue<Vector2>() : Vector2.zero;
+        bool dragging = _playerInput.Camera.Drag.ReadValue<float>() > 0;
+        Vector2 dragInput = dragging ? -_playerInput.Camera.MouseDelta.ReadValue<Vector2>() : Vector2.zero;
 
         Vector3 mouseInput = new Vector3(0, 0, 0);
-        if (borderPan && !dragging)
+        if (_borderPan && !dragging)
         {
-            Vector2 mousePosition = playerInput.Camera.Mouse.ReadValue<Vector2>();
-            if (mousePosition.x <= borderPanWidth)
+            Vector2 mousePosition = _playerInput.Camera.Mouse.ReadValue<Vector2>();
+            if (mousePosition.x <= _borderPanWidth)
                 mouseInput.x = -1;
-            if (mousePosition.x >= Screen.width - borderPanWidth)
+            if (mousePosition.x >= Screen.width - _borderPanWidth)
                 mouseInput.x = 1;
-            if (mousePosition.y >= Screen.height - borderPanWidth)
+            if (mousePosition.y >= Screen.height - _borderPanWidth)
                 mouseInput.z = 1;
-            if (mousePosition.y <= borderPanWidth)
+            if (mousePosition.y <= _borderPanWidth)
                 mouseInput.z = -1;
         }
 
-        Vector2 keyboardInput = !dragging ? playerInput.Camera.Movement.ReadValue<Vector2>() : Vector2.zero;
+        Vector2 keyboardInput = !dragging ? _playerInput.Camera.Movement.ReadValue<Vector2>() : Vector2.zero;
 
         Vector3 panMovement = new Vector3(keyboardInput.x, 0, keyboardInput.y) + mouseInput;
-        panMovement = panMovement.normalized * panSpeed * Time.deltaTime;
-        Vector3 dragMovement = new Vector3(dragInput.x, 0, dragInput.y) * dragSpeed * Time.deltaTime;
+        panMovement = panMovement.normalized * _panSpeed * Time.deltaTime;
+        Vector3 dragMovement = new Vector3(dragInput.x, 0, dragInput.y) * _dragSpeed * Time.deltaTime;
 
         Vector3 targetPosition = transform.position + panMovement + dragMovement;
 
-        targetPosition.x = targetPosition.x.Clamp(startingOffset.x - offsetLimit.x, startingOffset.x + offsetLimit.x);
-        targetPosition.z = targetPosition.z.Clamp(startingOffset.z - offsetLimit.y, startingOffset.z + offsetLimit.y);
+        targetPosition.x = targetPosition.x.Clamp(_startingOffset.x - _offsetLimit.x, _startingOffset.x + _offsetLimit.x);
+        targetPosition.z = targetPosition.z.Clamp(_startingOffset.z - _offsetLimit.y, _startingOffset.z + _offsetLimit.y);
 
         transform.position = targetPosition;
     }
 
     private void HandleScroll()
     {
-        float scrollInput = playerInput.Camera.Scroll.ReadValue<float>();
+        float scrollInput = _playerInput.Camera.Scroll.ReadValue<float>();
 
         // Reduce unnecessary computation if already at/past scroll ranges
-        if (transform.position.y <= scrollRange.x && scrollInput > 0) return;
-        if (transform.position.y >= scrollRange.y && scrollInput < 0) return;
+        if (transform.position.y <= _scrollRange.x && scrollInput > 0) return;
+        if (transform.position.y >= _scrollRange.y && scrollInput < 0) return;
 
         // Limit scrolling within bounds to prevent foward/backward movement when
         //   scrolling past bounds by calculating last valid point in path.
-        Vector3 targetPosition = transform.position + transform.forward * scrollInput * scrollSpeed * 0.1f * Time.deltaTime;
-        if (targetPosition.y < scrollRange.x || targetPosition.y > scrollRange.y)
+        Vector3 targetPosition = transform.position + transform.forward * scrollInput * _scrollSpeed * 0.1f * Time.deltaTime;
+        if (targetPosition.y < _scrollRange.x || targetPosition.y > _scrollRange.y)
         {
-            Plane limitPlane = new Plane(Vector3.up, new Vector3(0, scrollInput > 0 ? scrollRange.x : scrollRange.y, 0));
+            Plane limitPlane = new Plane(Vector3.up, new Vector3(0, scrollInput > 0 ? _scrollRange.x : _scrollRange.y, 0));
             Ray limitRay = new Ray(transform.position, targetPosition - transform.position);
             float rayDistance;
             if (limitPlane.Raycast(limitRay, out rayDistance) || rayDistance == 0)
@@ -156,11 +154,11 @@ public class CameraManager : MonoBehaviour
     /// </summary>
     public void ResetPosition()
     {
-        mainCamera.transform.localPosition = Vector3.zero;
-        mainCamera.transform.localRotation = Quaternion.identity;
+        _mainCamera.transform.localPosition = Vector3.zero;
+        _mainCamera.transform.localRotation = Quaternion.identity;
 
-        transform.position = startingOffset;
-        transform.rotation = Quaternion.Euler(startingRotation);
+        transform.position = _startingOffset;
+        transform.rotation = Quaternion.Euler(_startingRotation);
     }
     #endregion
 

@@ -249,6 +249,34 @@ public partial class @PlayerInput : IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Interaction"",
+            ""id"": ""00cc85f5-dd07-45d8-89cd-70bb647809fa"",
+            ""actions"": [
+                {
+                    ""name"": ""Select"",
+                    ""type"": ""Button"",
+                    ""id"": ""93aee81a-b51b-48c3-9439-03c391fa0671"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""16074fa4-6ff4-4c66-a725-1a1d01a101e1"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Mouse/Keyboard"",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -278,6 +306,9 @@ public partial class @PlayerInput : IInputActionCollection2, IDisposable
         m_Camera_Scroll = m_Camera.FindAction("Scroll", throwIfNotFound: true);
         m_Camera_Reset = m_Camera.FindAction("Reset", throwIfNotFound: true);
         m_Camera_Drag = m_Camera.FindAction("Drag", throwIfNotFound: true);
+        // Interaction
+        m_Interaction = asset.FindActionMap("Interaction", throwIfNotFound: true);
+        m_Interaction_Select = m_Interaction.FindAction("Select", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -406,6 +437,39 @@ public partial class @PlayerInput : IInputActionCollection2, IDisposable
         }
     }
     public CameraActions @Camera => new CameraActions(this);
+
+    // Interaction
+    private readonly InputActionMap m_Interaction;
+    private IInteractionActions m_InteractionActionsCallbackInterface;
+    private readonly InputAction m_Interaction_Select;
+    public struct InteractionActions
+    {
+        private @PlayerInput m_Wrapper;
+        public InteractionActions(@PlayerInput wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Select => m_Wrapper.m_Interaction_Select;
+        public InputActionMap Get() { return m_Wrapper.m_Interaction; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(InteractionActions set) { return set.Get(); }
+        public void SetCallbacks(IInteractionActions instance)
+        {
+            if (m_Wrapper.m_InteractionActionsCallbackInterface != null)
+            {
+                @Select.started -= m_Wrapper.m_InteractionActionsCallbackInterface.OnSelect;
+                @Select.performed -= m_Wrapper.m_InteractionActionsCallbackInterface.OnSelect;
+                @Select.canceled -= m_Wrapper.m_InteractionActionsCallbackInterface.OnSelect;
+            }
+            m_Wrapper.m_InteractionActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @Select.started += instance.OnSelect;
+                @Select.performed += instance.OnSelect;
+                @Select.canceled += instance.OnSelect;
+            }
+        }
+    }
+    public InteractionActions @Interaction => new InteractionActions(this);
     private int m_MouseKeyboardSchemeIndex = -1;
     public InputControlScheme MouseKeyboardScheme
     {
@@ -423,5 +487,9 @@ public partial class @PlayerInput : IInputActionCollection2, IDisposable
         void OnScroll(InputAction.CallbackContext context);
         void OnReset(InputAction.CallbackContext context);
         void OnDrag(InputAction.CallbackContext context);
+    }
+    public interface IInteractionActions
+    {
+        void OnSelect(InputAction.CallbackContext context);
     }
 }

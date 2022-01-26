@@ -65,6 +65,11 @@ public class HexTile : MonoBehaviourGizmos
     [Required]
     [SerializeField]
     private Transform propsParent;
+
+    [Title("Tower")]
+    [SerializeField]
+    [ReadOnly]
+    private Tower? _tower;
     #endregion
 
 
@@ -95,10 +100,8 @@ public class HexTile : MonoBehaviourGizmos
     /// Hex tile parent map
     /// </summary>
     public HexMap HexMap => _hexMap ??= GetComponentInChildren<HexMap>();
-    /// <summary>
-    /// Hex tile path waypoint
-    /// </summary>
     public PathWaypoint Waypoint => _waypoint ??= GetComponentInChildren<PathWaypoint>();
+    public Tower? tower => _tower ??= GetComponentInChildren<Tower>();
     #endregion
 
 
