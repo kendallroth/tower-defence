@@ -74,6 +74,7 @@ GameObject:
   - component: {fileID: 5357945654312266486}
   - component: {fileID: 5357945654312266481}
   - component: {fileID: 7447103363334792379}
+  - component: {fileID: 5312346145981422724}
   - component: {fileID: 6763391872031236641}
   m_Layer: 10
   m_Name: Hex
@@ -135,6 +136,7 @@ MonoBehaviour:
   height: 0
   terrainParent: {fileID: 5357945654118175442}
   propsParent: {fileID: 5357945653624947564}
+  _tower: {fileID: 0}
   neighbours:
   - {fileID: 0}
   - {fileID: 0}
@@ -142,8 +144,26 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  _hexMap: {fileID: 0}
+--- !u!114 &5312346145981422724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5357945654312266484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47d26d51f8e20a045845d63b11f7a718, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _percent: 1
+  _size: 1.1
+  _width: 0.2
+  _height: 1.025
 --- !u!120 &6763391872031236641
 LineRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -184,12 +204,13 @@ LineRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Positions:
-  - {x: 0, y: 1.025, z: 1.15}
-  - {x: 1, y: 1.025, z: 0.6}
-  - {x: 1, y: 1.025, z: -0.6}
-  - {x: 0, y: 1.025, z: -1.15}
-  - {x: -1, y: 1.025, z: -0.6}
-  - {x: -1, y: 1.025, z: 0.6}
+  - {x: 0, y: 1.025, z: 1.1}
+  - {x: 0.952628, y: 1.025, z: 0.54999995}
+  - {x: 0.95262796, y: 1.025, z: -0.5500001}
+  - {x: -0.00000009616505, y: 1.025, z: -1.1}
+  - {x: -0.952628, y: 1.025, z: -0.5499999}
+  - {x: -0.952628, y: 1.025, z: 0.5499999}
+  - {x: 0.0000001923301, y: 1.025, z: 1.1}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 1
@@ -198,7 +219,16 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.11949921
+        value: 0.2
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.2
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -210,8 +240,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 0.9647059, b: 0, a: 1}
-      key1: {r: 1, g: 0.9647059, b: 0, a: 1}
+      key0: {r: 1, g: 0.93333334, b: 0, a: 1}
+      key1: {r: 1, g: 0.93333334, b: 0, a: 1}
       key2: {r: 0, g: 0.8155856, b: 1, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -241,10 +271,13 @@ LineRenderer:
     numCapVertices: 5
     alignment: 0
     textureMode: 0
+    textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
+  m_MaskInteraction: 0
   m_UseWorldSpace: 0
   m_Loop: 1
+  m_ApplyActiveColorSpace: 0
 --- !u!1 &6386136800887543740
 GameObject:
   m_ObjectHideFlags: 0
@@ -298,6 +331,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 2
     m_TransformParent: {fileID: 5357945654118175442}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 0d0ac950689a9da49aff7a72a920dd96, type: 3}
@@ -353,6 +387,7 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_AddedGameObjects: []
   m_SourcePrefab: {fileID: 100100000, guid: 0d0ac950689a9da49aff7a72a920dd96, type: 3}
 --- !u!4 &6660326779295555065 stripped
 Transform:

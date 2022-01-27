@@ -29,6 +29,7 @@ public class WaveManager : MonoBehaviour
     [SerializeField]
     private bool _waitBetweenWaves = true;
     [Range(0f, 10f)]
+    [SuffixLabel("seconds")]
     [SerializeField]
     private float _timeBetweenWaves = 2f;
 
@@ -73,8 +74,6 @@ public class WaveManager : MonoBehaviour
 
         _waveNumber++;
         _enemiesSpawned = 0;
-
-        Debug.Log($"Beginning to spawn wave {_waveNumber}");
 
         // Wave warning / delay /////////////////////////////////////////////////
 

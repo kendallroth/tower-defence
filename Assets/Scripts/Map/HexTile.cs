@@ -34,7 +34,7 @@ public enum HexPathingType
 
 // NOTE: Set as selection base to improve experience in Unity editor (with nested prefab)
 [SelectionBase]
-[RequireComponent(typeof(LineRenderer))]
+[RequireComponent(typeof(HexHighlight))]
 public class HexTile : MonoBehaviourGizmos
 {
     #region Attributes
@@ -113,14 +113,14 @@ public class HexTile : MonoBehaviourGizmos
     [SerializeField, HideInInspector]
     private HexMap _hexMap;
     private PathWaypoint _waypoint;
-    private LineRenderer lineRenderer;
+    private HexHighlight _hexHighlight;
 #nullable enable warnings
 
 
     #region Unity Methods
     void Awake()
     {
-        lineRenderer = GetComponent<LineRenderer>();
+        _hexHighlight = GetComponent<HexHighlight>();
 
         // Empty tiles are not shown in-game
         if (tileType == HexTileType.EMPTY)
@@ -140,8 +140,6 @@ public class HexTile : MonoBehaviourGizmos
     /// <summary>
     /// Get a tile's neighbour in a direction
     /// </summary>
-    /// <param name="direction">Target direction</param>
-    /// <returns>Neighbouring tile in direction</returns>
     public HexTile? GetNeighbour(HexDirection direction)
     {
         return neighbours[(int)direction];
@@ -150,7 +148,6 @@ public class HexTile : MonoBehaviourGizmos
     /// <summary>
     /// Get all neighbouring path tiles
     /// </summary>
-    /// <returns>Neighbouring path tiles</returns>
     public HexTile[] GetNeighbourPaths()
     {
 #nullable disable warnings
@@ -195,8 +192,6 @@ public class HexTile : MonoBehaviourGizmos
     /// <summary>
     /// Initialize a Hex tile
     /// </summary>
-    /// <param name="coordinates">Tile coordinates</param>
-    /// <param name="tileType">Tile tile type</param>
     public void Init(HexCoordinates coordinates, HexTileType tileType = HexTileType.EMPTY)
     {
         SetCoordinates(coordinates);
@@ -252,7 +247,6 @@ public class HexTile : MonoBehaviourGizmos
     /// <summary>
     /// Rotate props towards a direction
     /// </summary>
-    /// <param name="direction">Target direction</param>
     public void RotateProps(HexDirection? direction)
     {
         int angle = direction != null ? Coordinates.Angle((HexDirection)direction) : 0;
@@ -279,31 +273,47 @@ public class HexTile : MonoBehaviourGizmos
     }
 
     /// <summary>
-    /// Remove the tile props
+    /// Remove the tile props (spawned objects)
     /// </summary>
     public void ClearProps()
     {
         propsParent.RemoveChildren();
     }
 
-    /// <summary>
-    /// Toggle whether the hex tile is selected
-    /// </summary>
-    /// <param name="selected">Whether tile is selected</param>
-    /// <param name="color">Selection color</param>
+    public void ShowProgress(float progress, Color? color = null)
+    {
+        _hexHighlight.SetProgress(progress, color);
+    }
+
     public void ToggleSelection(bool selected, Color? color = null)
     {
-        // NOTE: Line renderer will not be associated in Edit mode!
-        if (lineRenderer == null)
-            lineRenderer = GetComponent<LineRenderer>();
+        // NOTE: Hex highlight will not be associated in Edit mode!
+        if (_hexHighlight == null)
+            _hexHighlight = GetComponent<HexHighlight>();
 
-        if (selected && color.HasValue)
+        _hexHighlight.ToggleOutline(selected, color);
+    }
+
+    /// <summary>
+    /// Calculate points of a hex (pointy-side up, clockwise)
+    /// </summary>
+    public static Vector2[] CalculateHexPoints(float size, Vector2? position = null)
+    {
+        Vector2 offsetPosition = position.HasValue ? position.Value : Vector2.zero;
+        int points = 7;
+        Vector2[] vertices = new Vector2[points];
+
+        float angle = 2 * Mathf.PI / 6;
+
+        for (int i = 0; i < points; i++)
         {
-            lineRenderer.startColor = color.Value;
-            lineRenderer.endColor = color.Value;
+            vertices[i] = new Vector2(
+                offsetPosition.x + size * Mathf.Sin(angle * i),
+                offsetPosition.y + size * Mathf.Cos(angle * i)
+            );
         }
 
-        lineRenderer.enabled = selected;
+        return vertices;
     }
     #endregion
 

@@ -16,14 +16,15 @@ public class EnemySpawner : MonoBehaviour
     #endregion
 
     private PathWaypoint _startWaypoint;
+    private HexTile _tile;
     private float _waveProgress = 0f;
 
 
     #region Unity Methods
     private void Start()
     {
-        var tile = GetComponentInParent<HexTile>();
-        _startWaypoint = tile.GetComponentInChildren<PathWaypoint>().NextWaypoint;
+        _tile = GetComponentInParent<HexTile>();
+        _startWaypoint = _tile.GetComponentInChildren<PathWaypoint>().NextWaypoint;
     }
     #endregion
 
@@ -46,8 +47,25 @@ public class EnemySpawner : MonoBehaviour
 
     public void WarnWave(int waveNumber, float warningTime)
     {
+        StartCoroutine(AnimateProgressCoroutine(warningTime));
+
         // TODO
         Debug.Log($"Wave {waveNumber} begins in {warningTime}s");
+    }
+
+    private IEnumerator AnimateProgressCoroutine(float warningTime)
+    {
+        float warningTimer = warningTime;
+        while (warningTimer > 0f)
+        {
+            warningTimer -= Time.deltaTime;
+            _tile.ShowProgress((warningTime - warningTimer) / warningTime, Color.red);
+            yield return null;
+        }
+
+        // TODO: Consider animating/fading colour out?
+
+        _tile.ToggleSelection(false);
     }
     #endregion
 }

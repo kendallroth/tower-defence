@@ -74,13 +74,13 @@ public class TileSelector : GameSingleton<MonoBehaviour>
             if (tile == null) return;
 
             bool alreadyHighlighted = CompareTiles(highlightedTile, tile);
+            bool canInteract = tile.PathingType != HexPathingType.SPAWN && tile.PathingType != HexPathingType.DESTINATION;
             if (!alreadyHighlighted && _hoverEnabled)
                 HighlightTile(tile);
 
             if (_playerInput.Interaction.Select.triggered)
             {
-                Debug.Log("Triggered");
-                if (_clickEnabled)
+                if (_clickEnabled && canInteract)
                     SelectTile(tile, true);
                 else
                     DeselectTile();

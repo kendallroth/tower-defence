@@ -13,6 +13,7 @@ public class EnemyWave
     [SerializeField]
     private float _enemyCount = 10;
     [Range(0.1f, 2f)]
+    [SuffixLabel("seconds")]
     [SerializeField]
     private float _spawnRate = 0.5f;
     #endregion

@@ -29,7 +29,7 @@ public class MapEditorWindow : OdinEditorWindow
     [PropertyOrder(-1)]
     [Button("@\"Clear Selection (\" + selections.Count + \")\"", ButtonSizes.Medium)]
     [DisableIf("@!hasSelection")]
-    private void ClearClick() => ClearSelectedTiles();
+    private void ClearClick() => ClearSelectedTiles(true);
 
     [Title("Update")]
     [DisableIf("@!hasSelection")]
@@ -136,18 +136,29 @@ public class MapEditorWindow : OdinEditorWindow
         Selection.activeGameObject = null;
     }
 
-    private void ClearSelectedTiles()
+    private void ClearSelectedTiles(bool clearSelected = false)
     {
         // Enable selection gizmo when deselecting tiles (returns to normal state)
         ToggleSelectionGizmo(true);
 
+        if (clearSelected)
+            DeselectCurrentObject();
+
         if (selections.Count == 0) return;
 
-        selections.ForEach((tile) =>
+        // NOTE: Occasionally an error can be thrown if the tile prefab was selected and then
+        //         closed, since it will try to keep the reference to the now-destroyed prefab.
+        try
         {
-            tile.ToggleSelection(false);
-        });
-        selections.Clear();
+            selections.ForEach((tile) =>
+            {
+                tile?.ToggleSelection(false);
+            });
+        }
+        finally
+        {
+            selections.Clear();
+        }
     }
 
     /// <summary>

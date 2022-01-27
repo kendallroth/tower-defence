@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 99f56520cb0f8734ba8dca2bde0b3006, type: 3}
       propertyPath: m_Name
-      value: Enemy (Green)
+      value: Enemy (Green) Variant
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_AddedGameObjects: []
@@ -64,22 +64,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 99f56520cb0f8734ba8dca2bde0b3006, type: 3}
   m_PrefabInstance: {fileID: 7621814436879646117}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6452541979971859837
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7279917102657077492}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7426a33bcd41a0146bac123b9afe6d35, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _speed: 2
-  _reward: 1
-  _damage: 1
-  _startingHealth: 10
 --- !u!54 &4604181452743249519
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -109,3 +93,21 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.49999997
   m_Center: {x: 0, y: 0.32643613, z: 0}
+--- !u!114 &6452541979971859837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7279917102657077492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7426a33bcd41a0146bac123b9afe6d35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _speed: 2
+  _reward: 1
+  _damage: 1
+  _startingHealth: 10
+  _scaleAnimationDelay: 0.25
+  _scaleAnimationTime: 0.5
