@@ -59,12 +59,14 @@ public class HexTile : MonoBehaviourGizmos
     private int height = 0;
 
     [Title("Game Objects")]
+#nullable disable warnings
     [Required]
     [SerializeField]
     private Transform terrainParent;
     [Required]
     [SerializeField]
     private Transform propsParent;
+#nullable enable warnings
 
     [Title("Tower")]
     [SerializeField]
@@ -105,12 +107,14 @@ public class HexTile : MonoBehaviourGizmos
     #endregion
 
 
+#nullable disable warnings
     [SerializeField, HideInInspector]
     private HexTile?[] neighbours = new HexTile[6];
     [SerializeField, HideInInspector]
     private HexMap _hexMap;
     private PathWaypoint _waypoint;
     private LineRenderer lineRenderer;
+#nullable enable warnings
 
 
     #region Unity Methods
@@ -149,7 +153,9 @@ public class HexTile : MonoBehaviourGizmos
     /// <returns>Neighbouring path tiles</returns>
     public HexTile[] GetNeighbourPaths()
     {
+#nullable disable warnings
         return neighbours.Where((n) => n != null && n.tileType == HexTileType.PATH).ToArray();
+#nullable enable warnings
     }
 
     public void ClearNeighbours()

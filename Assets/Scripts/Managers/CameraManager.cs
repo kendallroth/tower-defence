@@ -94,27 +94,17 @@ public class CameraManager : MonoBehaviour
     private void HandleMovement()
     {
         bool dragging = _playerInput.Camera.Drag.ReadValue<float>() > 0;
-        Vector2 dragInput = dragging ? -_playerInput.Camera.MouseDelta.ReadValue<Vector2>() : Vector2.zero;
+        //Vector2 dragInput = dragging ? -_playerInput.Camera.MouseDelta.ReadValue<Vector2>() : Vector2.zero;
 
-        Vector3 mouseInput = new Vector3(0, 0, 0);
-        if (_borderPan && !dragging)
-        {
-            Vector2 mousePosition = _playerInput.Camera.Mouse.ReadValue<Vector2>();
-            if (mousePosition.x <= _borderPanWidth)
-                mouseInput.x = -1;
-            if (mousePosition.x >= Screen.width - _borderPanWidth)
-                mouseInput.x = 1;
-            if (mousePosition.y >= Screen.height - _borderPanWidth)
-                mouseInput.z = 1;
-            if (mousePosition.y <= _borderPanWidth)
-                mouseInput.z = -1;
-        }
+        Vector3 dragMovement = CalculateDrag(dragging);
+        Vector3 edgeMovement = CalculateEdgePan(_borderPan && !dragging);
+        Vector3 panMovement = CalculatePan(!dragging);
 
-        Vector2 keyboardInput = !dragging ? _playerInput.Camera.Movement.ReadValue<Vector2>() : Vector2.zero;
+        //Vector2 keyboardInput = !dragging ? _playerInput.Camera.Movement.ReadValue<Vector2>() : Vector2.zero;
 
-        Vector3 panMovement = new Vector3(keyboardInput.x, 0, keyboardInput.y) + mouseInput;
-        panMovement = panMovement.normalized * _panSpeed * Time.deltaTime;
-        Vector3 dragMovement = new Vector3(dragInput.x, 0, dragInput.y) * _dragSpeed * Time.deltaTime;
+        //Vector3 panMovement = new Vector3(keyboardInput.x, 0, keyboardInput.y) + panMovement;
+        //panMovement = panMovement.normalized * _panSpeed * Time.deltaTime;
+        //Vector3 dragMovement = new Vector3(dragInput.x, 0, dragInput.y) * _dragSpeed * Time.deltaTime;
 
         Vector3 targetPosition = transform.position + panMovement + dragMovement;
 
@@ -122,6 +112,40 @@ public class CameraManager : MonoBehaviour
         targetPosition.z = targetPosition.z.Clamp(_startingOffset.z - _offsetLimit.y, _startingOffset.z + _offsetLimit.y);
 
         transform.position = targetPosition;
+    }
+
+    private Vector3 CalculateDrag(bool canDrag = false)
+    {
+        if (!canDrag) return Vector3.zero;
+
+        Vector2 dragInput = -_playerInput.Camera.MouseDelta.ReadValue<Vector2>();
+        return new Vector3(dragInput.x, 0, dragInput.y) * _dragSpeed * Time.deltaTime;
+    }
+
+    private Vector3 CalculatePan(bool canMove = false)
+    {
+        if (!canMove) return Vector3.zero;
+
+        Vector2 keyboardInput = _playerInput.Camera.Movement.ReadValue<Vector2>();
+
+        return new Vector3(keyboardInput.x, 0, keyboardInput.y) * _panSpeed * Time.deltaTime;
+    }
+
+    private Vector3 CalculateEdgePan(bool canPan = false)
+    {
+        if (!canPan) return Vector3.zero;
+
+        Vector3 edgePanInput = new Vector3(0, 0, 0);
+        Vector2 mousePosition = _playerInput.Camera.Mouse.ReadValue<Vector2>();
+        if (mousePosition.x <= _borderPanWidth)
+            edgePanInput.x = -1;
+        if (mousePosition.x >= Screen.width - _borderPanWidth)
+            edgePanInput.x = 1;
+        if (mousePosition.y >= Screen.height - _borderPanWidth)
+            edgePanInput.z = 1;
+        if (mousePosition.y <= _borderPanWidth)
+            edgePanInput.z = -1;
+        return edgePanInput * _panSpeed * Time.deltaTime;
     }
 
     private void HandleScroll()

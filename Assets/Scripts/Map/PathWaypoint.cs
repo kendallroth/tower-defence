@@ -46,7 +46,7 @@ public class PathWaypoint : MonoBehaviourGizmos
     /// <summary>
     /// Parent hex tile
     /// </summary>
-    public HexTile HexTile => hexTile;
+    public HexTile HexTile => hexTile!;
     #endregion
 
 
@@ -55,7 +55,7 @@ public class PathWaypoint : MonoBehaviourGizmos
     [SerializeField, HideInInspector]
     private PathWaypoint? nextWaypoint = null;
     [SerializeField, HideInInspector]
-    private HexTile hexTile;
+    private HexTile? hexTile;
 
     private float waypointMarkerRadius = 0.1f;
     public int Index => Number - 1;

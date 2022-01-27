@@ -2,8 +2,10 @@
 
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
@@ -76,7 +78,7 @@ public class MapEditorWindow : OdinEditorWindow
         // Clicking on an already selected tile will target objects inside the parent tile,
         //   but we only care about the hex tile (hence checking the parents).
         HexTile selectedTile = Selection.activeGameObject.GetComponent<HexTile>();
-        selectedTile ??= Selection.activeGameObject.GetComponentInParent <HexTile>();
+        selectedTile ??= Selection.activeGameObject.GetComponentInParent<HexTile>();
 
         if (selectedTile != null)
             HandleTileSelect(selectedTile);
@@ -92,7 +94,7 @@ public class MapEditorWindow : OdinEditorWindow
         // Set update form properties
         SetFormValues(tile);
 
-        // Allow selecting multiple tiles with shift
+        // Allow selecting multiple tiles with shift (has interesting behaviour with multiple clicks...)
         bool selectingMultiple = Keyboard.current.leftShiftKey.isPressed;
 
         // Only store last tool if valid and hide current tool to prevent moving/rotating
@@ -117,6 +119,9 @@ public class MapEditorWindow : OdinEditorWindow
         if (!selectingMultiple)
             ClearSelectedTiles();
 
+        // Hide selection gizmo when selecting tiles to remove distracting outline
+        ToggleSelectionGizmo(false);
+
         tile.ToggleSelection(true, selectionColor);
         selections.Add(tile);
     }
@@ -133,6 +138,9 @@ public class MapEditorWindow : OdinEditorWindow
 
     private void ClearSelectedTiles()
     {
+        // Enable selection gizmo when deselecting tiles (returns to normal state)
+        ToggleSelectionGizmo(true);
+
         if (selections.Count == 0) return;
 
         selections.ForEach((tile) =>
@@ -140,6 +148,19 @@ public class MapEditorWindow : OdinEditorWindow
             tile.ToggleSelection(false);
         });
         selections.Clear();
+    }
+
+    /// <summary>
+    /// Toggle Scene view selection gizmo to provide a cleaner interface for tile editor.
+    /// <br /><br />
+    /// Based from: http://answers.unity.com/answers/837370/view.html
+    /// </summary>
+    /// <param name="enabled">Whether selection gizmo should be enabled</param>
+    private void ToggleSelectionGizmo(bool enabled)
+    {
+        Type AnnotationUtility = Type.GetType("UnityEditor.AnnotationUtility, UnityEditor");
+        var ShowOutlineOption = AnnotationUtility.GetProperty("showSelectionOutline", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+        ShowOutlineOption.SetValue(null, enabled);
     }
 
     /// <summary>

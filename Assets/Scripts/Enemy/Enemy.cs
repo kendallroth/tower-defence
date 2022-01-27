@@ -1,5 +1,15 @@
+#nullable enable
+
 using Drawing;
+using System;
+using System.Collections;
 using UnityEngine;
+
+public enum EnemyDeath
+{
+    SELF,
+    TOWER,
+}
 
 public class Enemy : MonoBehaviour
 {
@@ -17,17 +27,28 @@ public class Enemy : MonoBehaviour
     [Range(1, 100)]
     [SerializeField]
     private float _startingHealth = 10f;
+
+    [Header("Objects")]
+    [Range(0, 1f)]
+    [SerializeField]
+    private float _scaleAnimationDelay = 0.5f;
+    [Range(0, 1f)]
+    [SerializeField]
+    private float _scaleAnimationTime = 0.5f;
     #endregion
 
     #region Properties
-    public float Damage => _damage;
+    public bool alive { get; private set; } = true;
+    public float damage => _damage;
     public float health { get; private set; }
-    public float Reward => _reward;
-    public float Speed => _speed;
+    public float reward => _reward;
+    public float speed => _speed;
+
+    public Action<Enemy, Tower?>? OnDeath;
     #endregion
 
-    private PathWaypoint _waypoint;
-    private DebugManager _debugManager;
+    private PathWaypoint? _waypoint;
+    private DebugManager? _debugManager;
 
 
     #region Unity Methods
@@ -40,7 +61,7 @@ public class Enemy : MonoBehaviour
     {
         MoveTowardsWaypoint();
 
-        if (_debugManager.showEnemyDirection)
+        if (_debugManager?.showEnemyDirection ?? false)
             Draw.ingame.ArrowheadArc(transform.position + transform.forward / 3, transform.forward, 0.25f, Color.blue);
     }
 
@@ -50,13 +71,20 @@ public class Enemy : MonoBehaviour
     #region Custom Methods
     public void Spawn(PathWaypoint target)
     {
+        alive = true;
         health = _startingHealth;
         _waypoint = target;
+
+        StartCoroutine(AnimateSizeCoroutine(_scaleAnimationDelay, 0, 1));
     }
 
     private void MoveTowardsWaypoint()
     {
-        Vector3 target = _waypoint.transform.position;
+        // NOTE: No waypoint likely means the enemy has completed the path
+        //         and will be destroyed shortly (by exit collision), so
+        //         the enemy must keep moving forward for the collision.
+        Vector3 target = _waypoint?.transform.position ?? transform.position + transform.forward;
+
         Vector3 position = transform.position;
         Vector3 direction = target - position;
         transform.Translate(
@@ -76,35 +104,71 @@ public class Enemy : MonoBehaviour
 
     private void FindNextWaypoint()
     {
-        // NOTE: Should never reach last waypoint (exit should destroy them first)!
-        if (_waypoint.NextWaypoint == null)
+        // NOTE: Reaching the last waypoint without colliding with the exit is
+        //         possible depending on exit model collider. In this case,
+        //         the enemy should automatically die within a second of no collision.
+        if (_waypoint?.NextWaypoint == null)
         {
-            Destroy(gameObject);
-            return;
+            this.Wait(1, () => Kill(null));
         }
 
-        _waypoint = _waypoint.NextWaypoint;
+        _waypoint = _waypoint?.NextWaypoint ?? null;
+
+        // "Shrink" the enemy when nearing the end
+        if (_waypoint != null && _waypoint.NextWaypoint == null)
+            StartCoroutine(AnimateSizeCoroutine(_scaleAnimationDelay * 2, 1, 0.5f));
     }
 
-    public void TakeDamage(float damage)
+    /// <summary>
+    /// Animate size when spawning (or nearing tower)
+    /// </summary>
+    private IEnumerator AnimateSizeCoroutine(float delay, float startSize, float targetSize)
+    {
+        Vector3 startScale = new Vector3(startSize, startSize, startSize);
+        Vector3 targetScale = new Vector3(targetSize, targetSize, targetSize);
+
+        transform.localScale = startScale;
+
+        yield return new WaitForSeconds(delay);
+
+        float scaleTime = 0;
+        while (scaleTime < _scaleAnimationTime)
+        {
+            if (!alive) yield return null;
+
+            scaleTime += Time.deltaTime;
+            transform.localScale = Vector3.Lerp(startScale, targetScale, scaleTime / _scaleAnimationTime);
+            yield return null;
+        }
+    }
+
+    public void TakeDamage(float damage, Tower tower)
     {
         health -= damage;
 
         // TODO: Add damage effect/sound
+        // TODO: Invoke global event
 
         if (health <= Mathf.Epsilon)
         {
-            Kill();
+            Kill(tower);
         }
     }
 
-    private void Kill()
+    public void Kill(Tower? killer = null)
     {
-        // TODO: Add death effect/sound
-        // TODO: Reward player
+        if (!alive) return;
+
+        alive = false;
+        health = 0;
+
+        // TODO: Add death effect/sound (if killed)
+        // TODO: Reward player (if killed)
+        // TODO: Invoke global event
+
+        OnDeath?.Invoke(this, killer);
 
         Destroy(gameObject);
     }
-
     #endregion
 }

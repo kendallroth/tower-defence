@@ -1,3 +1,5 @@
+#nullable enable
+
 using Sirenix.OdinInspector;
 using Sirenix.Utilities.Editor;
 using System.Collections;
@@ -18,31 +20,38 @@ public class WaveManager : MonoBehaviour
     [PropertyOrder(-4)]
     [ShowInInspector]
     private string _waveEnemyProgress => $"{_enemiesSpawned} / {currentWave?.enemyCount ?? 0} spawned";
+    [DisplayAsString]
+    [PropertyOrder(-3)]
+    [ShowInInspector]
+    private string _enemiesAliveDisplay => $"{_enemiesAlive} enemies alive";
+
+    [Header("Configuration")]
+    [SerializeField]
+    private bool _waitBetweenWaves = true;
     [Range(0f, 10f)]
     [SerializeField]
     private float _timeBetweenWaves = 2f;
+
     [PropertySpace(SpaceBefore = 8)]
     [SerializeField]
-    private EnemyWave[] _waves;
+    private EnemyWave[] _waves = new EnemyWave[0];
     #endregion
 
     #region Properties
-    public EnemySpawner spawner => _spawner;
+    public EnemySpawner spawner => _spawner!;
     public EnemyWave currentWave => _waveIdx < _waves.Length ? _waves[_waveIdx] : _waves[_waves.Length - 1];
-    [ShowInInspector]
-    public int waveNumber => _waveNumber;
     public bool spawning => _spawningWave;
     #endregion
 
-    private EnemySpawner _spawner;
-    private Coroutine _spawnCoroutine;
+    private EnemySpawner? _spawner;
+    private Coroutine? _spawnCoroutine;
     private int _waveNumber = 0;
     private int _waveIdx => Mathf.Max(_waveNumber - 1, 0);
     private bool _spawningWave = false;
-    private bool _finishedSpawning = false;
+    private bool _finishedSpawningWave => _enemiesSpawned >= currentWave.enemyCount;
     private float _waveCountdown = 0f;
     private int _enemiesSpawned = 0;
-    //private int _enemiesAlive = 0;
+    private int _enemiesAlive = 0;
 
 
     #region Unity Methods
@@ -60,6 +69,8 @@ public class WaveManager : MonoBehaviour
     #region Custom Methods
     private IEnumerator SpawnWaveCoroutine()
     {
+        if (_spawner == null) yield break;
+
         _waveNumber++;
         _enemiesSpawned = 0;
 
@@ -82,16 +93,18 @@ public class WaveManager : MonoBehaviour
 
         _spawningWave = true;
 
-        while (_enemiesSpawned < currentWave.enemyCount)
+        while (!_finishedSpawningWave)
         {
             // TODO: Spawner should only run while the game is not over
 
             _enemiesSpawned++;
-            GUIHelper.RequestRepaint();
+            _enemiesAlive++;
 
-            _spawner.SpawnEnemy(currentWave.enemyPrefab, _enemiesSpawned / currentWave.enemyCount);
-            GUIHelper.RequestRepaint();
-            yield return new WaitForSeconds(currentWave.spawnRate);
+            Enemy enemy = _spawner.SpawnEnemy(currentWave.enemyPrefab, _enemiesSpawned / currentWave.enemyCount);
+            enemy.OnDeath += OnEnemyDeath;
+
+            if (!_finishedSpawningWave)
+                yield return new WaitForSeconds(currentWave.spawnRate);
         }
 
         _spawningWave = false;
@@ -100,16 +113,32 @@ public class WaveManager : MonoBehaviour
 
         // Wave cleanup /////////////////////////////////////////////////////////
 
-        // TODO: Move into separate function to be triggered when all enemies are dead in a wave
-
-        if (waveNumber >= _waves.Length)
+        if (_waveNumber >= _waves.Length)
         {
             Debug.Log("WaveManager has finished spawning");
-            _finishedSpawning = true;
             yield break;
         }
 
+        // Next wave preparation ////////////////////////////////////////////////
+
+        // TODO: Consider moving into separate function to be triggered when all enemies are dead in a wave
+
+        while (_waitBetweenWaves && _enemiesAlive > 0)
+        {
+            yield return null;
+        }
+
+        Debug.Log("Wave has been handled");
+
         _spawnCoroutine = StartCoroutine(SpawnWaveCoroutine());
+    }
+
+    private void OnEnemyDeath(Enemy enemy, Tower? tower)
+    {
+        Debug.Log("Enemy died!");
+
+        _enemiesAlive--;
+        enemy.OnDeath -= OnEnemyDeath;
     }
     #endregion
 

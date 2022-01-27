@@ -31,7 +31,9 @@ public class TileSelector : GameSingleton<MonoBehaviour>
     #endregion
 
     private Color _mixedColor => Color.Lerp(_highlightColor, _selectionColor, 0.75f);
+#nullable disable annotations
     private PlayerInput _playerInput;
+#nullable enable annotations
 
 
     #region Unity Methods
@@ -40,7 +42,7 @@ public class TileSelector : GameSingleton<MonoBehaviour>
         _playerInput = new PlayerInput();
     }
 
-    void Update()
+    private void Update()
     {
         CalculateSelection();
     }

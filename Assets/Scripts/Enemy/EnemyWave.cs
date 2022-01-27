@@ -22,5 +22,9 @@ public class EnemyWave
     public float enemyCount => _enemyCount;
     public float spawnRate => _spawnRate;
     #endregion
+
+
+    #region Custom Methods
+    #endregion
 }
 

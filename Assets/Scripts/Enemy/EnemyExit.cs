@@ -27,7 +27,7 @@ public class EnemyExit : MonoBehaviour
 
         // TODO: Take tower damage
 
-        Destroy(gameObject);
+        enemy.Kill(null);
     }
 
     #endregion
