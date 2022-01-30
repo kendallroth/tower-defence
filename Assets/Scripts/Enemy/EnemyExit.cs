@@ -15,27 +15,18 @@ public class EnemyExit : MonoBehaviour
         
     }
 
-    void Update()
-    {
-        
-    }
-
     private void OnTriggerEnter(Collider other)
     {
         Enemy enemy = other.gameObject.GetComponent<Enemy>();
         if (enemy == null) return;
 
-        // TODO: Take tower damage
+        // TODO: Take tower damage (if still alive)
 
         enemy.Kill(null);
     }
-
     #endregion
 
 
     #region Custom Methods
-    #endregion
-
-    #region Input Actions
     #endregion
 }

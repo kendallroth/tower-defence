@@ -32,7 +32,6 @@ public class HexHighlight : MonoBehaviour
     void Awake()
     {
         _lineRenderer = GetComponent<LineRenderer>();
-        _lineRenderer.loop = false;
 
         CalculateAllPoints();
     }
@@ -58,10 +57,16 @@ public class HexHighlight : MonoBehaviour
         _lineRenderer.enabled = selected;
     }
 
+    /// <summary>
+    /// Show hex-shaped progress indicator around hex borders
+    /// <br /><br />
+    /// NOTE: Currently nothing uses the partial progress system as the line renderer
+    ///         renders strangely when rounding the corners (can be fixed with image)!
+    /// </summary>
     public void SetProgress(float percent = 1f, Color? color = null)
     {
         percent = percent.Clamp(0, 1);
-        _lineRenderer.enabled = percent > Mathf.Epsilon;
+        Vector3[] points = CalculatePartialPoints(percent);
 
         if (color.HasValue)
         {
@@ -69,8 +74,12 @@ public class HexHighlight : MonoBehaviour
             _lineRenderer.endColor = color.Value;
         }
 
-        Vector3[] points = CalculatePartialPoints(percent);
-        SetRenderPoints(points);
+        bool completed = percent >= 1;
+        _lineRenderer.enabled = percent > Mathf.Epsilon;
+
+        // Completed loops should use looping instead of duplicating the last point
+        _lineRenderer.loop = !completed ? false : true;
+        SetRenderPoints(!completed ? points : points[0..^1]);
     }
 
     /// <summary>
@@ -89,21 +98,21 @@ public class HexHighlight : MonoBehaviour
         if (fullPoints == points) return _vertices;
         float remainingPercent = points * percent - Mathf.Floor(points * percent);
 
-        Vector3[] test = new Vector3[fullPoints + 1];
+        Vector3[] vertices = new Vector3[fullPoints + 1];
         Vector3 lastFullPoint = _vertices[0];
         int idx = 0;
         while (idx < fullPoints)
         {
             lastFullPoint = _vertices[idx];
-            test[idx] = lastFullPoint;
+            vertices[idx] = lastFullPoint;
             idx++;
         }
 
         Vector3 nextPoint = _vertices[idx];
         Vector3 middlePoint = Vector3Extensions.PointAlongLine(lastFullPoint, nextPoint, remainingPercent);
-        test[idx] = middlePoint;
+        vertices[idx] = middlePoint;
 
-        return test;
+        return vertices;
     }
 
     /// <summary>

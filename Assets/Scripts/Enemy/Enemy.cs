@@ -11,6 +11,7 @@ public enum EnemyDeath
     TOWER,
 }
 
+[RequireComponent(typeof(EnemyAnimator))]
 public class Enemy : MonoBehaviour
 {
     #region Attributes
@@ -30,17 +31,6 @@ public class Enemy : MonoBehaviour
     [Range(0, 1f)]
     [SerializeField]
     private float _heightOffset = 0f;
-
-    [Header("Objects")]
-    [Range(0, 1f)]
-    [SerializeField]
-    private float _animationInDelay = 0.25f;
-    [Range(0, 1f)]
-    [SerializeField]
-    private float _animationOutDelay = 0.75f;
-    [Range(0, 1f)]
-    [SerializeField]
-    private float _animationTime = 0.5f;
     #endregion
 
     #region Properties
@@ -55,11 +45,13 @@ public class Enemy : MonoBehaviour
 
     private PathWaypoint? _waypoint;
     private DebugManager? _debugManager;
+    private EnemyAnimator? _animator;
 
 
     #region Unity Methods
     void Awake()
     {
+        _animator = GetComponent<EnemyAnimator>();
         _debugManager = DebugManager.Instance;
     }
 
@@ -70,7 +62,6 @@ public class Enemy : MonoBehaviour
         if (_debugManager?.showEnemyDirection ?? false)
             Draw.ingame.ArrowheadArc(transform.position + transform.forward / 3, transform.forward, 0.25f, Color.blue);
     }
-
     #endregion
 
 
@@ -81,7 +72,7 @@ public class Enemy : MonoBehaviour
         health = _startingHealth;
         _waypoint = target;
 
-        StartCoroutine(AnimateSizeCoroutine(_animationInDelay, 0, 1));
+        _animator!.AnimateIn();
     }
 
     private void MoveTowardsWaypoint()
@@ -103,7 +94,7 @@ public class Enemy : MonoBehaviour
             Time.deltaTime * _speed * 2
         );
 
-        // Transition between waypoints as necessary
+        // Transition between waypoints as necessary (they are linked together)
         if (Vector3.Distance(transform.position, target) < 0.01f)
             FindNextWaypoint();
     }
@@ -119,33 +110,6 @@ public class Enemy : MonoBehaviour
         }
 
         _waypoint = _waypoint?.NextWaypoint ?? null;
-
-        // "Shrink" the enemy when nearing the end
-        if (_waypoint != null && _waypoint.NextWaypoint == null)
-            StartCoroutine(AnimateSizeCoroutine(_animationOutDelay, 1, 0.5f));
-    }
-
-    /// <summary>
-    /// Animate size when spawning (or nearing tower)
-    /// </summary>
-    private IEnumerator AnimateSizeCoroutine(float delay, float startSize, float targetSize)
-    {
-        Vector3 startScale = new Vector3(startSize, startSize, startSize);
-        Vector3 targetScale = new Vector3(targetSize, targetSize, targetSize);
-
-        transform.localScale = startScale;
-
-        yield return new WaitForSeconds(delay);
-
-        float scaleTime = 0;
-        while (scaleTime < _animationTime)
-        {
-            if (!alive) yield return null;
-
-            scaleTime += Time.deltaTime;
-            transform.localScale = Vector3.Lerp(startScale, targetScale, scaleTime / _animationTime);
-            yield return null;
-        }
     }
 
     public void TakeDamage(float damage, Tower tower)
@@ -155,10 +119,8 @@ public class Enemy : MonoBehaviour
         // TODO: Add damage effect/sound
         // TODO: Invoke global event
 
-        if (health <= Mathf.Epsilon)
-        {
+        if (health <= 0)
             Kill(tower);
-        }
     }
 
     public void Kill(Tower? killer = null)
