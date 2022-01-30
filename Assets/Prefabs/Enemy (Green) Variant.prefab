@@ -109,5 +109,7 @@ MonoBehaviour:
   _reward: 1
   _damage: 1
   _startingHealth: 10
-  _scaleAnimationDelay: 0.25
-  _scaleAnimationTime: 0.5
+  _heightOffset: 0.2
+  _animationInDelay: 0.1
+  _animationOutDelay: 0.6
+  _animationTime: 0.5

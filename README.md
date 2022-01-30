@@ -13,11 +13,15 @@ There are several assets that must be installed to work with the project!
 - `External/`
   - ALINE 
   - Medieval Builder Kit (Kenney)
-  - Prefab Painter (nTools)
   - Message Dispatched (ooti)
   - Tower Defence Kit (Kenney)
 - `Plugins/`
   - Odin Inspector (Sirenix)
+
+## Resources
+
+- [See Through Objects](https://theslidefactory.com/see-through-objects-with-stencil-buffers-using-unity-urp/)
+  - Used to hide enemies while spawning through portal (not currently implemented)
 
 ## Caveats
 

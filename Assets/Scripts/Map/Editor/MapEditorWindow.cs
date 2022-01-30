@@ -80,6 +80,9 @@ public class MapEditorWindow : OdinEditorWindow
         HexTile selectedTile = Selection.activeGameObject.GetComponent<HexTile>();
         selectedTile ??= Selection.activeGameObject.GetComponentInParent<HexTile>();
 
+        // Deselect (in hierarchy) all other selected tiles to keep selection clean
+        DeselectOtherTiles();
+
         if (selectedTile != null)
             HandleTileSelect(selectedTile);
         else
@@ -112,7 +115,7 @@ public class MapEditorWindow : OdinEditorWindow
             alreadySelectedTile.ToggleSelection(false);
             selections.Remove(alreadySelectedTile);
             SetFormValues(null);
-            DeselectCurrentObject();
+            DeselectCurrentTile();
             return;
         }
 
@@ -127,13 +130,28 @@ public class MapEditorWindow : OdinEditorWindow
     }
 
     /// <summary>
-    /// Deselecting currently selected objects must be done after the selection handler
-    ///   has completed, otherwise any children will be set as selected object!
+    /// Deselecting (in hierarchy) currently selected objects must be done after the
+    ///   selection handler has completed, otherwise any children will be set as selected object!
     /// </summary>
-    private async void DeselectCurrentObject()
+    private async void DeselectCurrentTile()
     {
+        if (Selection.activeGameObject.GetComponent<HexTile>() == null) return;
+
         await Task.Yield();
         Selection.activeGameObject = null;
+    }
+
+    /// <summary>
+    /// Deselecting (in hierarchy) all other selected objects must be done after the
+    ///   selection handler has completed (see 'DeselectCurrentObject')!
+    /// </summary>
+    private async void DeselectOtherTiles()
+    {
+        if (!Selection.activeGameObject) return;
+
+        // TODO: Consider only deselecting other Tiles???
+        await Task.Yield();
+        Selection.objects = Selection.gameObjects.Where((o) => o == Selection.activeGameObject || o.GetComponent<HexTile>() == null).ToArray();
     }
 
     private void ClearSelectedTiles(bool clearSelected = false)
@@ -142,7 +160,7 @@ public class MapEditorWindow : OdinEditorWindow
         ToggleSelectionGizmo(true);
 
         if (clearSelected)
-            DeselectCurrentObject();
+            DeselectCurrentTile();
 
         if (selections.Count == 0) return;
 

@@ -56,11 +56,14 @@ public class WaveManager : MonoBehaviour
 
 
     #region Unity Methods
-    void Start()
+    private void Awake()
     {
         _spawner = FindObjectOfType<EnemySpawner>();
         _waveCountdown = _timeBetweenWaves;
+    }
 
+    void Start()
+    {
         // Waves are spawned recursively upon completion of previous wave
         _spawnCoroutine = StartCoroutine(SpawnWaveCoroutine());
     }
@@ -99,7 +102,7 @@ public class WaveManager : MonoBehaviour
             _enemiesSpawned++;
             _enemiesAlive++;
 
-            Enemy enemy = _spawner.SpawnEnemy(currentWave.enemyPrefab, _enemiesSpawned / currentWave.enemyCount);
+            Enemy enemy = _spawner.SpawnEnemy(currentWave.enemyPrefab);
             enemy.OnDeath += OnEnemyDeath;
 
             if (!_finishedSpawningWave)

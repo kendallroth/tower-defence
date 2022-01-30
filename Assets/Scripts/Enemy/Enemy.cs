@@ -27,14 +27,20 @@ public class Enemy : MonoBehaviour
     [Range(1, 100)]
     [SerializeField]
     private float _startingHealth = 10f;
+    [Range(0, 1f)]
+    [SerializeField]
+    private float _heightOffset = 0f;
 
     [Header("Objects")]
     [Range(0, 1f)]
     [SerializeField]
-    private float _scaleAnimationDelay = 0.5f;
+    private float _animationInDelay = 0.25f;
     [Range(0, 1f)]
     [SerializeField]
-    private float _scaleAnimationTime = 0.5f;
+    private float _animationOutDelay = 0.75f;
+    [Range(0, 1f)]
+    [SerializeField]
+    private float _animationTime = 0.5f;
     #endregion
 
     #region Properties
@@ -75,7 +81,7 @@ public class Enemy : MonoBehaviour
         health = _startingHealth;
         _waypoint = target;
 
-        StartCoroutine(AnimateSizeCoroutine(_scaleAnimationDelay, 0, 1));
+        StartCoroutine(AnimateSizeCoroutine(_animationInDelay, 0, 1));
     }
 
     private void MoveTowardsWaypoint()
@@ -83,7 +89,7 @@ public class Enemy : MonoBehaviour
         // NOTE: No waypoint likely means the enemy has completed the path
         //         and will be destroyed shortly (by exit collision), so
         //         the enemy must keep moving forward for the collision.
-        Vector3 target = _waypoint?.transform.position ?? transform.position + transform.forward;
+        Vector3 target = _waypoint != null ? _waypoint.transform.position + Vector3.up * _heightOffset : transform.position + transform.forward;
 
         Vector3 position = transform.position;
         Vector3 direction = target - position;
@@ -116,7 +122,7 @@ public class Enemy : MonoBehaviour
 
         // "Shrink" the enemy when nearing the end
         if (_waypoint != null && _waypoint.NextWaypoint == null)
-            StartCoroutine(AnimateSizeCoroutine(_scaleAnimationDelay * 2, 1, 0.5f));
+            StartCoroutine(AnimateSizeCoroutine(_animationOutDelay, 1, 0.5f));
     }
 
     /// <summary>
@@ -132,12 +138,12 @@ public class Enemy : MonoBehaviour
         yield return new WaitForSeconds(delay);
 
         float scaleTime = 0;
-        while (scaleTime < _scaleAnimationTime)
+        while (scaleTime < _animationTime)
         {
             if (!alive) yield return null;
 
             scaleTime += Time.deltaTime;
-            transform.localScale = Vector3.Lerp(startScale, targetScale, scaleTime / _scaleAnimationTime);
+            transform.localScale = Vector3.Lerp(startScale, targetScale, scaleTime / _animationTime);
             yield return null;
         }
     }
