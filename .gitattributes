@@ -4,7 +4,7 @@
 *.cginc text
 *.shader text
 
-*.mat merge=unityyamlmerge eol=lf
+*.mat diff=nodiff merge=unityyamlmerge eol=lf
 *.anim merge=unityyamlmerge eol=lf
 *.unity diff=nodiff merge=unityyamlmerge eol=lf
 *.prefab diff=nodiff merge=unityyamlmerge eol=lf

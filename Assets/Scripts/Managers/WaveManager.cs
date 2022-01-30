@@ -1,5 +1,6 @@
 #nullable enable
 
+using com.ootii.Messages;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities.Editor;
 using System.Collections;
@@ -27,20 +28,24 @@ public class WaveManager : MonoBehaviour
 
     [Header("Configuration")]
     [SerializeField]
-    private bool _waitBetweenWaves = true;
+    private bool _pauseBetweenWaves = true;
+    [SuffixLabel("seconds")]
+    [Range(0f, 5f)]
+    [SerializeField]
+    private float _waveDelay = 1f;
     [Range(0f, 10f)]
     [SuffixLabel("seconds")]
     [SerializeField]
-    private float _timeBetweenWaves = 2f;
+    private float _waveWarningTime = 2f;
 
     [PropertySpace(SpaceBefore = 8)]
     [SerializeField]
-    private EnemyWave[] _waves = new EnemyWave[0];
+    private Wave[] _waves = new Wave[1];
     #endregion
 
     #region Properties
     public EnemySpawner spawner => _spawner!;
-    public EnemyWave currentWave => _waveIdx < _waves.Length ? _waves[_waveIdx] : _waves[_waves.Length - 1];
+    public Wave currentWave => _waveIdx < _waves.Length ? _waves[_waveIdx] : _waves[_waves.Length - 1];
     public bool spawning => _spawningWave;
     #endregion
 
@@ -50,6 +55,7 @@ public class WaveManager : MonoBehaviour
     private int _waveIdx => Mathf.Max(_waveNumber - 1, 0);
     private bool _spawningWave = false;
     private bool _finishedSpawningWave => _enemiesSpawned >= currentWave.enemyCount;
+    private bool _gameOver => GameManager.Instance.gameOver;
     private float _waveCountdown = 0f;
     private int _enemiesSpawned = 0;
     private int _enemiesAlive = 0;
@@ -59,30 +65,45 @@ public class WaveManager : MonoBehaviour
     private void Awake()
     {
         _spawner = FindObjectOfType<EnemySpawner>();
-        _waveCountdown = _timeBetweenWaves;
+        _waveCountdown = _waveWarningTime;
+
+        MessageDispatcher.AddListener(GameEvents.ENEMY__DESTROYED, OnEnemyGone);
+        MessageDispatcher.AddListener(GameEvents.ENEMY__REACHED_EXIT, OnEnemyGone);
+        MessageDispatcher.AddListener(GameEvents.GAME__OVER, OnGameOver);
     }
 
     void Start()
     {
         // Waves are spawned recursively upon completion of previous wave
-        _spawnCoroutine = StartCoroutine(SpawnWaveCoroutine());
+        _spawnCoroutine = StartCoroutine(SpawnWaveCoroutine(_waveDelay));
+
+        _spawner?.TogglePortal(true);
+    }
+
+    private void OnDestroy()
+    {
+        MessageDispatcher.RemoveListener(GameEvents.ENEMY__DESTROYED, OnEnemyGone);
+        MessageDispatcher.RemoveListener(GameEvents.ENEMY__REACHED_EXIT, OnEnemyGone);
+        MessageDispatcher.RemoveListener(GameEvents.GAME__OVER, OnGameOver);
     }
     #endregion
 
 
     #region Custom Methods
-    private IEnumerator SpawnWaveCoroutine()
+    private IEnumerator SpawnWaveCoroutine(float delay = 0)
     {
-        if (_spawner == null) yield break;
+        if (_gameOver || _spawner == null) yield break;
+
+        yield return new WaitForSeconds(delay);
 
         _waveNumber++;
         _enemiesSpawned = 0;
 
         // Wave warning / delay /////////////////////////////////////////////////
 
-        _spawner.WarnWave(_waveNumber, _timeBetweenWaves);
+        _spawner.WarnWave(_waveNumber, _waveWarningTime);
 
-        _waveCountdown = _timeBetweenWaves;
+        _waveCountdown = _waveWarningTime;
         while (_waveCountdown > 0)
         {
             _waveCountdown -= Time.deltaTime;
@@ -95,52 +116,61 @@ public class WaveManager : MonoBehaviour
 
         _spawningWave = true;
 
-        while (!_finishedSpawningWave)
+        for (int sectionIdx = 0; sectionIdx < currentWave.waveSections.Length; sectionIdx++)
         {
-            // TODO: Spawner should only run while the game is not over
+            WaveSection section = currentWave.waveSections[sectionIdx];
 
-            _enemiesSpawned++;
-            _enemiesAlive++;
+            yield return new WaitForSeconds(section.sectionDelay);
 
-            Enemy enemy = _spawner.SpawnEnemy(currentWave.enemyPrefab);
-            enemy.OnDeath += OnEnemyDeath;
+            // TODO: Support random section enemy order spawning...
+            for (int enemyIdx = 0; enemyIdx < section.enemies.Length; enemyIdx++)
+            {
+                WaveSectionEnemy enemyGroup = section.enemies[enemyIdx];
 
-            if (!_finishedSpawningWave)
-                yield return new WaitForSeconds(currentWave.spawnRate);
+                for (int counter = 0; counter < enemyGroup.count; counter++)
+                {
+                    _enemiesSpawned++;
+                    _enemiesAlive++;
+
+                    _spawner.SpawnEnemy(enemyGroup.enemyPrefab);
+
+                    yield return new WaitForSeconds(enemyGroup.spawnDelay);
+                }
+            }
         }
 
         _spawningWave = false;
 
-        Debug.Log($"Finished spawning wave {_waveNumber}");
-
         // Wave cleanup /////////////////////////////////////////////////////////
 
         if (_waveNumber >= _waves.Length)
-        {
-            Debug.Log("WaveManager has finished spawning");
             yield break;
-        }
 
         // Next wave preparation ////////////////////////////////////////////////
 
-        // TODO: Consider moving into separate function to be triggered when all enemies are dead in a wave
+        // TODO: Consider moving into separate function to be triggered when all enemies are dead in a wave???
 
-        while (_waitBetweenWaves && _enemiesAlive > 0)
-        {
+        while (_enemiesAlive > 0)
             yield return null;
+
+        if (!_pauseBetweenWaves)
+        {
+            StopCoroutine(_spawnCoroutine);
+            _spawnCoroutine = StartCoroutine(SpawnWaveCoroutine(_waveDelay));
         }
+    }
+    #endregion
 
-        Debug.Log("Wave has been handled");
 
-        _spawnCoroutine = StartCoroutine(SpawnWaveCoroutine());
+    #region Event Handlers
+    private void OnGameOver(IMessage message)
+    {
+        StopCoroutine(_spawnCoroutine);
     }
 
-    private void OnEnemyDeath(Enemy enemy, Tower? tower)
+    private void OnEnemyGone(IMessage message)
     {
-        Debug.Log("Enemy died!");
-
         _enemiesAlive--;
-        enemy.OnDeath -= OnEnemyDeath;
     }
     #endregion
 

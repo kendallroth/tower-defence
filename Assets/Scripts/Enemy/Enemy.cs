@@ -1,15 +1,10 @@
 #nullable enable
 
+using com.ootii.Messages;
 using Drawing;
 using System;
-using System.Collections;
 using UnityEngine;
 
-public enum EnemyDeath
-{
-    SELF,
-    TOWER,
-}
 
 [RequireComponent(typeof(EnemyAnimator))]
 public class Enemy : MonoBehaviour
@@ -35,12 +30,10 @@ public class Enemy : MonoBehaviour
 
     #region Properties
     public bool alive { get; private set; } = true;
-    public float damage => _damage;
+    public int damage => _damage;
     public float health { get; private set; }
-    public float reward => _reward;
+    public int reward => _reward;
     public float speed => _speed;
-
-    public Action<Enemy, Tower?>? OnDeath;
     #endregion
 
     private PathWaypoint? _waypoint;
@@ -106,7 +99,7 @@ public class Enemy : MonoBehaviour
         //         the enemy should automatically die within a second of no collision.
         if (_waypoint?.NextWaypoint == null)
         {
-            this.Wait(1, () => Kill(null));
+            this.Wait(1, () => ReachExit());
         }
 
         _waypoint = _waypoint?.NextWaypoint ?? null;
@@ -114,27 +107,41 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(float damage, Tower tower)
     {
+        if (!alive) return;
+
         health -= damage;
 
         // TODO: Add damage effect/sound
-        // TODO: Invoke global event
+        // TODO: Invoke global event???
 
         if (health <= 0)
             Kill(tower);
     }
 
-    public void Kill(Tower? killer = null)
+    /// <summary>
+    /// Respond to enemy reaching exit (not death)
+    /// </summary>
+    public void ReachExit()
+    {
+        if (!alive) return;
+        alive = false;
+
+        MessageDispatcher.SendMessageData(GameEvents.ENEMY__REACHED_EXIT, this, -1);
+
+        Destroy(gameObject);
+    }
+
+    public void Kill(Tower killer)
     {
         if (!alive) return;
 
         alive = false;
         health = 0;
 
-        // TODO: Add death effect/sound (if killed)
-        // TODO: Reward player (if killed)
-        // TODO: Invoke global event
+        // TODO: Add death effect/sound
 
-        OnDeath?.Invoke(this, killer);
+        EnemyDestroyedData message = new EnemyDestroyedData(this, killer);
+        MessageDispatcher.SendMessageData(GameEvents.ENEMY__DESTROYED, message, -1);
 
         Destroy(gameObject);
     }

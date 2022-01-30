@@ -1,18 +1,18 @@
+using com.ootii.Messages;
 using UnityEngine;
 
 public class EnemyExit : MonoBehaviour
 {
     #region Attributes
-    #endregion
-
-    #region Properties
+    [SerializeField]
+    private ParticleSystem _fireParticles;
     #endregion
 
 
     #region Unity Methods
-    void Start()
+    private void Awake()
     {
-        
+        MessageDispatcher.AddListener(GameEvents.PLAYER__LIVES_CHANGE, OnLivesChange);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -20,13 +20,29 @@ public class EnemyExit : MonoBehaviour
         Enemy enemy = other.gameObject.GetComponent<Enemy>();
         if (enemy == null) return;
 
-        // TODO: Take tower damage (if still alive)
+        enemy.ReachExit();
+    }
 
-        enemy.Kill(null);
+    private void OnDestroy()
+    {
+        MessageDispatcher.RemoveListener(GameEvents.PLAYER__LIVES_CHANGE, OnLivesChange);
     }
     #endregion
 
 
-    #region Custom Methods
+    #region Event Handlers
+    private void OnLivesChange(IMessage message)
+    {
+        LivesChangeData livesChange = (LivesChangeData)message.Data;
+
+        // TODO: Add slow animation towards/away from damage
+        if (livesChange.percent < 0.5f && !_fireParticles.isPlaying)
+        {
+            _fireParticles.Play();
+        } else if (livesChange.percent > 0.5f && _fireParticles.isPlaying)
+        {
+            _fireParticles.Stop();
+        }
+    }
     #endregion
 }

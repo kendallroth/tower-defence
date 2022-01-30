@@ -1,3 +1,4 @@
+using com.ootii.Messages;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +12,8 @@ public class EnemySpawner : MonoBehaviour
     #region Attributes
     [SerializeField]
     private Transform _spawnLocation;
-
+    [SerializeField]
+    private GameObject _portalEffects;
 
     [Header("Progress Indicator")]
     [ColorUsage(true, true)]
@@ -50,14 +52,19 @@ public class EnemySpawner : MonoBehaviour
 
     public void StartWave(int waveNumber)
     {
-        // TODO
-        Debug.Log($"Wave {waveNumber} is starting");
+        MessageDispatcher.SendMessageData(GameEvents.WAVE__START, waveNumber);
     }
 
     public void WarnWave(int waveNumber, float warningTime)
     {
-        // TODO: Handle game ending mid warning (if needed...)!
+        MessageDispatcher.SendMessageData(GameEvents.WAVE__WARNING, waveNumber);
+
         StartCoroutine(AnimateWarningCoroutine(warningTime));
+    }
+
+    public void TogglePortal(bool enabled)
+    {
+        _portalEffects.SetActive(enabled);
     }
 
     /// <summary>
