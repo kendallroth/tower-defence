@@ -1,9 +1,16 @@
 using com.ootii.Messages;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class EnemyExit : MonoBehaviour
 {
     #region Attributes
+    [Range(0, 1)]
+    [SuffixLabel("%")]
+    [SerializeField]
+    private float _fireStartsAt = 0f;
+
+    [Header("Effects")]
     [SerializeField]
     private ParticleSystem _fireParticles;
     #endregion
@@ -36,10 +43,11 @@ public class EnemyExit : MonoBehaviour
         LivesChangeData livesChange = (LivesChangeData)message.Data;
 
         // TODO: Add slow animation towards/away from damage
-        if (livesChange.percent < 0.5f && !_fireParticles.isPlaying)
+        if (livesChange.percent <= _fireStartsAt && !_fireParticles.isPlaying)
         {
             _fireParticles.Play();
-        } else if (livesChange.percent > 0.5f && _fireParticles.isPlaying)
+        }
+        else if (livesChange.percent > 0.5f && _fireParticles.isPlaying)
         {
             _fireParticles.Stop();
         }

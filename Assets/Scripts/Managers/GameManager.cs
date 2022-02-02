@@ -57,6 +57,10 @@ public class GameManager : GameSingleton<GameManager>
         if (_gameOver) return;
         _gameOver = true;
 
+        // NOTE: Only possible through debugging or anything that suddenly triggers game end
+        if (gameStats.lives > 0)
+            gameStats.RemoveLives(gameStats.lives);
+
         Debug.Log("Game has been lost!");
 
         GameOverData message = new GameOverData(GameResult.LOST, gameStats.wavesSurvived);

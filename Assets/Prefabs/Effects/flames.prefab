@@ -117,7 +117,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 3
       scalar: 2
-      minScalar: 1.5
+      minScalar: 1.75
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -169,8 +169,8 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 3.5
-      minScalar: 2.5
+      scalar: 3.25
+      minScalar: 2.25
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -285,8 +285,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 2
-      minScalar: 1
+      scalar: 1.2
+      minScalar: 0.8
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -993,17 +993,17 @@ ParticleSystem:
           inWeight: 0.33333334
           outWeight: 0.9364331
         - serializedVersion: 3
-          time: 0.29965064
-          value: 0.9324317
-          inSlope: 0.11092871
-          outSlope: 0.11092871
+          time: 0.45429236
+          value: 0.93242985
+          inSlope: 1.0071424
+          outSlope: 1.0071424
           tangentMode: 0
           weightedMode: 0
-          inWeight: 0.4065255
+          inWeight: 0.28883314
           outWeight: 0.23454398
         - serializedVersion: 3
-          time: 0.8777136
-          value: 0.7225773
+          time: 0.91894317
+          value: 0.7766295
           inSlope: -1.5404373
           outSlope: -1.5404373
           tangentMode: 0
@@ -1327,15 +1327,15 @@ ParticleSystem:
         key0: {r: 1, g: 1, b: 1, a: 1}
         key1: {r: 0.5471698, g: 0.29042652, b: 0.14711641, a: 1}
         key2: {r: 0.31132078, g: 0.19444591, b: 0.13069598, a: 0}
-        key3: {r: 0, g: 0, b: 0, a: 0}
+        key3: {r: 0.31132078, g: 0.19444591, b: 0.13069598, a: 0}
         key4: {r: 0, g: 0, b: 0, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
         key6: {r: 0, g: 0, b: 0, a: 0}
         key7: {r: 0, g: 0, b: 0, a: 0}
-        ctime0: 31226
-        ctime1: 47417
+        ctime0: 43176
+        ctime1: 56283
         ctime2: 65535
-        ctime3: 0
+        ctime3: 65535
         ctime4: 0
         ctime5: 0
         ctime6: 0
@@ -2699,11 +2699,11 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
   NoiseModule:
-    enabled: 0
+    enabled: 1
     strength:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0.2
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -4781,7 +4781,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e823cd5b5d27c0f4b8256e7c12ee3e6d, type: 2}
+  - {fileID: 2100000, guid: acb624ba478120643962815b0d6b9249, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

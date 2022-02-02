@@ -209,7 +209,6 @@ LineRenderer:
   - {x: -0.00000009616505, y: 1.025, z: -1.1}
   - {x: -0.952628, y: 1.025, z: -0.5499999}
   - {x: -0.952628, y: 1.025, z: 0.5499999}
-  - {x: 0.0000001923301, y: 1.025, z: 1.1}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 1
